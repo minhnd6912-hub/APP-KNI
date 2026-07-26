@@ -1312,7 +1312,7 @@ const handleCreate = async () => {
                 )}
               </div>
 
-              {/* Actions */}
+              {/* Actions
               <div className="flex items-center justify-end mt-auto">
                 {task.status === 'completed'
                   ? <span className="text-green-400 text-xs">✓ Hoàn thành</span>
@@ -1368,7 +1368,65 @@ const handleCreate = async () => {
                       {STATUS_CONFIG[task.status].label}
                     </span>
                 }
-              </div>
+              </div> */}
+              {/* Actions */}
+            <div className="flex items-center justify-end mt-auto">
+              {task.status === 'completed' ? (
+                <span className="text-green-400 text-xs">✓ Hoàn thành</span>
+
+              ) : task.status === 'submitted' && currentUser.role === 'manager' ? (
+                <div className="flex flex-col gap-1.5 items-end">
+                  {task.submissionFileUrl && (
+                    <a href={task.submissionFileUrl} target="_blank" rel="noopener noreferrer"
+                      className="text-xs underline" style={{ color: '#60a5fa' }}>
+                      📎 Xem file đã nộp
+                    </a>
+                  )}
+                  {task.submissionNote && <p className="text-gray-500 text-xs max-w-[200px] text-right">{task.submissionNote}</p>}
+                  <div className="flex gap-1.5">
+                    <button onClick={() => handleReject(task)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: '#2a1010', color: '#f87171' }}>
+                      Không chấp nhận
+                    </button>
+                    <button onClick={() => handleApprove(task)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: '#0f2a1a', color: '#34d399' }}>
+                      ✓ Duyệt
+                    </button>
+                  </div>
+                </div>
+
+              ) : task.status === 'submitted' && task.assignedTo === currentUser.id ? (
+                <span className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: '#1a1a40', color: '#a78bfa' }}>
+                  ⏳ Đang chờ quản lý duyệt
+                </span>
+
+              ) : isMyTask ? (
+                <div className="flex flex-col gap-1 items-end">
+                  <div className="flex gap-1.5">
+                    {task.status === 'open' && (
+                      <button onClick={() => handleStart(task.id)}
+                        className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#1e293b', color: '#60a5fa' }}>
+                        Bắt đầu
+                      </button>
+                    )}
+                    {task.status === 'in-progress' && (
+                      <button onClick={() => setSubmittingTask(task)}
+                        className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#1e293b', color: '#34d399' }}>
+                        Nộp task ✓
+                      </button>
+                    )}
+                  </div>
+                  {task.status === 'in-progress' && task.rejectedReason && (
+                    <p className="text-red-400 text-xs mt-1 max-w-[200px] text-right">❌ Bị từ chối: {task.rejectedReason}</p>
+                  )}
+                </div>
+
+              ) : (
+                <span className="text-xs px-2 py-0.5 rounded" style={{ color: STATUS_CONFIG[task.status].color, background: '#12121a' }}>
+                  {STATUS_CONFIG[task.status].label}
+                </span>
+              )}
+            </div>
             </div>
           )
         })}
