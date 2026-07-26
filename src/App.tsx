@@ -5,7 +5,7 @@ import companyLogo from './assets/company-logo.png'
 
 type Role = 'manager' | 'employee'
 type View = 'dashboard' | 'tasks' | 'leaderboard' | 'rewards' | 'social' | 'profile'
-type TaskStatus = 'open' | 'in-progress' | 'completed'
+type TaskStatus = 'open' | 'in-progress' | 'submitted' | 'completed'
 type TaskPriority = 'low' | 'medium' | 'high'
 type ChatChannel = 'general' | 'team' | 'announcements' | 'dm'
 
@@ -43,6 +43,10 @@ interface Task {
   category: string
   priority: TaskPriority
   selfCreated: boolean
+  submissionFileUrl?: string
+  submissionNote?: string
+  submittedAt?: string
+  rejectedReason?: string
 }
 
 interface Message {
@@ -575,6 +579,7 @@ const PRIORITY_CONFIG = {
 const STATUS_CONFIG = {
   open: { label: 'Chưa bắt đầu', color: '#6b7280' },
   'in-progress': { label: 'Đang làm', color: '#06b6d4' },
+  submitted: { label: 'Chờ duyệt', color: '#a78bfa' },
   completed: { label: 'Hoàn thành', color: '#10b981' },
 }
 
@@ -891,9 +896,10 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
 }
 // ==================== DASHBOARD ====================
 
-function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
+function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser, setView }: {
   currentUser: User; tasks: Task[]; users: User[]
   setTasks: (t: Task[]) => void; setCurrentUser: (u: User) => void
+  setView: (v: View) => void
 }) {
   const { progress, needed, level } = getExpProgress(currentUser.exp)
   const isManager = currentUser.role === 'manager'
@@ -988,10 +994,9 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser }: 
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-amber-400 font-bold text-sm" style={{ fontFamily: 'Rajdhani, sans-serif' }}>+{task.expReward}</span>
                   {task.assignedTo === currentUser.id && task.status === 'in-progress' && (
-                    <button onClick={() => handleComplete(task.id, task.expReward)}
-                      className="text-xs px-2.5 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-all font-medium"
-                      style={{ background: '#0a2a1a', color: '#10b981', border: '1px solid #10b98130' }}>
-                      Nộp
+                    <button onClick={() => setView('tasks')}
+                      className="text-xs px-3 py-1 rounded-lg font-semibold" style={{ background: '#1a1a40', color: '#a78bfa' }}>
+                      Vào nộp task →
                     </button>
                   )}
                 </div>
@@ -1032,6 +1037,74 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser }: 
   )
 }
 
+// ===========================================================================
+function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void }) {
+  const [file, setFile] = useState<File | null>(null)
+  const [note, setNote] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async () => {
+    if (!file) { setError('Vui lòng chọn ảnh hoặc file kết quả trước khi nộp.'); return }
+    setError('')
+    setUploading(true)
+
+    const ext = file.name.split('.').pop()
+    const path = `${task.id}/${Date.now()}.${ext}`
+
+    const { error: uploadError } = await supabase.storage.from('task-submissions').upload(path, file)
+    if (uploadError) { setUploading(false); setError('Lỗi tải file: ' + uploadError.message); return }
+
+    const { data: urlData } = supabase.storage.from('task-submissions').getPublicUrl(path)
+
+    const { error: updateError } = await supabase.from('tasks').update({
+      status: 'submitted',
+      submission_file_url: urlData.publicUrl,
+      submission_note: note.trim() || null,
+      submitted_at: new Date().toISOString(),
+      rejected_reason: null,
+    }).eq('id', task.id)
+
+    setUploading(false)
+    if (updateError) { setError(updateError.message); return }
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 px-4" style={{ background: '#000000a0' }}>
+      <div className="w-full max-w-md rounded-2xl p-6" style={{ background: '#0e0e24', border: '1px solid #1e1e4a' }}>
+        <h3 className="text-white font-bold text-lg mb-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>Nộp kết quả task</h3>
+        <p className="text-gray-500 text-sm mb-4">{task.title}</p>
+
+        <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Ảnh / File kết quả</label>
+        <input type="file" accept="image/*,.pdf,.doc,.docx,.zip"
+          onChange={e => setFile(e.target.files?.[0] ?? null)}
+          className="w-full text-sm text-gray-300 mb-4 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white"
+        />
+
+        <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Ghi chú (không bắt buộc)</label>
+        <textarea value={note} onChange={e => setNote(e.target.value)} rows={3}
+          placeholder="Mô tả ngắn gọn kết quả đã làm..."
+          className="w-full px-4 py-2.5 mb-4 rounded-xl text-white placeholder-gray-600 text-sm outline-none resize-none"
+          style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
+
+        {error && <p className="text-red-400 text-xs mb-3">{error}</p>}
+
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-gray-400" style={{ background: '#14143a' }}>
+            Huỷ
+          </button>
+          <button onClick={handleSubmit} disabled={uploading}
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)', color: '#fff' }}>
+            {uploading ? 'Đang tải lên...' : 'Nộp task'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ==================== TASKS VIEW ====================
 
 function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
@@ -1042,6 +1115,7 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
   const [showModal, setShowModal] = useState(false)
   const [supportersOpen, setSupportersOpen] = useState(false)
   const supportersRef = useRef<HTMLDivElement>(null)
+  const [submittingTask, setSubmittingTask] = useState<Task | null>(null)
   const [form, setForm] = useState({
     title: '', description: '', expReward: 50, dueDate: '',
     category: 'development', priority: 'medium' as TaskPriority,
@@ -1096,10 +1170,19 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
   await supabase.from('tasks').update({ status: 'in-progress' }).eq('id', id)
 }
 
-const handleComplete = async (id: string, exp: number) => {
-  await supabase.from('tasks').update({ status: 'completed' }).eq('id', id)
-  await supabase.from('profiles').update({ exp: currentUser.exp + exp }).eq('id', currentUser.id)
-  setCurrentUser({ ...currentUser, exp: currentUser.exp + exp })
+const handleApprove = async (task: Task) => {
+  await supabase.from('tasks').update({ status: 'completed' }).eq('id', task.id)
+  if (task.assignedTo) {
+    const assignee = users.find(u => u.id === task.assignedTo)
+    if (assignee) await supabase.from('profiles').update({ exp: assignee.exp + task.expReward }).eq('id', assignee.id)
+  }
+}
+
+const handleReject = async (task: Task) => {
+  const reason = window.prompt('Lý do từ chối (nhân viên sẽ thấy để sửa lại):') ?? ''
+  await supabase.from('tasks').update({
+    status: 'in-progress', submission_file_url: null, submission_note: null, rejected_reason: reason,
+  }).eq('id', task.id)
 }
 
 const handleCreate = async () => {
@@ -1236,20 +1319,49 @@ const handleCreate = async () => {
                   : isMyTask
                     ? (
                       <div className="flex gap-1.5">
+
                         {task.status === 'open' && (
                           <button onClick={() => handleStart(task.id)}
-                            className="text-xs px-2.5 py-1 rounded-lg font-medium"
-                            style={{ background: '#002030', color: '#06b6d4', border: '1px solid #06b6d430' }}>
+                            className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#1e293b', color: '#60a5fa' }}>
                             Bắt đầu
                           </button>
                         )}
-                        {task.status === 'in-progress' && (
-                          <button onClick={() => handleComplete(task.id, task.expReward)}
-                            className="text-xs px-2.5 py-1 rounded-lg font-medium"
-                            style={{ background: '#0a2a1a', color: '#10b981', border: '1px solid #10b98130' }}>
+                        {task.status === 'in-progress' && task.assignedTo === currentUser.id && (
+                          <button onClick={() => setSubmittingTask(task)}
+                            className="px-4 py-2 rounded-xl text-sm font-bold" style={{ background: '#1e293b', color: '#34d399' }}>
                             Nộp task ✓
                           </button>
                         )}
+                        {task.status === 'in-progress' && task.rejectedReason && task.assignedTo === currentUser.id && (
+                          <p className="text-red-400 text-xs mt-1">❌ Bị từ chối: {task.rejectedReason}</p>
+                        )}
+                        {task.status === 'submitted' && task.assignedTo === currentUser.id && (
+                          <span className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: '#1a1a40', color: '#a78bfa' }}>
+                            ⏳ Đang chờ quản lý duyệt
+                          </span>
+                        )}
+                        {task.status === 'submitted' && currentUser.role === 'manager' && (
+                          <div className="flex flex-col gap-1.5 items-end">
+                            {task.submissionFileUrl && (
+                              <a href={task.submissionFileUrl} target="_blank" rel="noopener noreferrer"
+                                className="text-xs underline" style={{ color: '#60a5fa' }}>
+                                📎 Xem file đã nộp
+                              </a>
+                            )}
+                            {task.submissionNote && <p className="text-gray-500 text-xs max-w-[200px] text-right">{task.submissionNote}</p>}
+                            <div className="flex gap-1.5">
+                              <button onClick={() => handleReject(task)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: '#2a1010', color: '#f87171' }}>
+                                Không chấp nhận
+                              </button>
+                              <button onClick={() => handleApprove(task)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-bold" style={{ background: '#0f2a1a', color: '#34d399' }}>
+                                ✓ Duyệt
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
                       </div>
                     )
                     : <span className="text-xs px-2 py-0.5 rounded" style={{ color: STATUS_CONFIG[task.status].color, background: '#12121a' }}>
@@ -1400,6 +1512,9 @@ const handleCreate = async () => {
             </div>
           </div>
         </div>
+      )}
+      {submittingTask && (
+        <SubmitTaskModal task={submittingTask} onClose={() => setSubmittingTask(null)} />
       )}
     </div>
   )
@@ -1901,7 +2016,7 @@ function AppShell({ currentUser, setCurrentUser, allUsers, tasks, setTasks, mess
     ? allUsers.map(u => u.id === currentUser.id ? currentUser : u)
     : [...allUsers, currentUser]
 
-  const sharedProps = { currentUser, tasks, users, setTasks, setCurrentUser }
+  const sharedProps = { currentUser, tasks, users, setTasks, setCurrentUser, setView }
 
   const renderView = () => {
     switch (view) {
@@ -2039,6 +2154,10 @@ export default function App() {
     status: t.status, assignedTo: t.assigned_to ?? undefined, projectManager: t.project_manager ?? undefined,
     supporters: t.supporters ?? [], createdBy: t.created_by, dueDate: t.due_date,
     category: t.category, priority: t.priority, selfCreated: t.self_created,
+    submissionFileUrl: t.submission_file_url ?? undefined,
+    submissionNote: t.submission_note ?? undefined,
+    submittedAt: t.submitted_at ?? undefined,
+    rejectedReason: t.rejected_reason ?? undefined,
   }
 }
   // Kiểm tra xem đã đăng nhập từ trước chưa (giữ session khi refresh trang)
