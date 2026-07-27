@@ -1682,17 +1682,22 @@ function LeaderboardView({ users, tasks }: { users: User[]; tasks: Task[] }) {
 
 // ==================== REWARDS ====================
 
-function RewardsView({ currentUser, setCurrentUser }: { currentUser: User; setCurrentUser: (u: User) => void }) {
-  const [redeemed, setRedeemed] = useState<string[]>([])
+function RewardsView({ currentUser, redemptions }: { currentUser: User; redemptions: { id: string; userId: string; rewardId: string; cost: number }[] }) {
+  const myRedemptions = redemptions.filter(r => r.userId === currentUser.id)
+  const spentPoints = myRedemptions.reduce((s, r) => s + r.cost, 0)
+  const availablePoints = currentUser.exp - spentPoints
+  const redeemed = myRedemptions.map(r => r.rewardId)
   const [notice, setNotice] = useState('')
 
-  const handleRedeem = (r: Reward) => {
-    if (currentUser.exp < r.cost || redeemed.includes(r.id)) return
-    setCurrentUser({ ...currentUser, exp: currentUser.exp - r.cost })
-    setRedeemed(p => [...p, r.id])
-    setNotice(`🎉 Đổi thành công: ${r.name}!`)
-    setTimeout(() => setNotice(''), 3500)
-  }
+  const handleRedeem = async (r: Reward) => {
+  if (availablePoints < r.cost || redeemed.includes(r.id)) return
+  const { error } = await supabase.from('redemptions').insert({
+    user_id: currentUser.id, reward_id: r.id, reward_name: r.name, cost: r.cost,
+  })
+  if (error) { setNotice('❌ Lỗi: ' + error.message); setTimeout(() => setNotice(''), 3500); return }
+  setNotice(`🎉 Đổi thành công: ${r.name}!`)
+  setTimeout(() => setNotice(''), 3500)
+}
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -2061,10 +2066,11 @@ const NAV = [
   { id: 'profile', icon: '👤', label: 'Hồ sơ' },
 ]
 
-function AppShell({ currentUser, setCurrentUser, allUsers, tasks, setTasks, messages, setMessages }: {
+function AppShell({ currentUser, setCurrentUser, allUsers, tasks, setTasks, messages, setMessages, redemptions }: {
   currentUser: User; setCurrentUser: (u: User) => void; allUsers: User[]
   tasks: Task[]; setTasks: (t: Task[]) => void
   messages: Message[]; setMessages: (m: Message[]) => void
+  redemptions: { id: string; userId: string; rewardId: string; cost: number }[]
 }) {
   const [view, setView] = useState<View>('dashboard')
   const { level } = getExpProgress(currentUser.exp)
@@ -2074,14 +2080,14 @@ function AppShell({ currentUser, setCurrentUser, allUsers, tasks, setTasks, mess
     ? allUsers.map(u => u.id === currentUser.id ? currentUser : u)
     : [...allUsers, currentUser]
 
-  const sharedProps = { currentUser, tasks, users, setTasks, setCurrentUser, setView }
+  const sharedProps = { currentUser, tasks, users, setTasks, setCurrentUser, redemptions, setView }
 
   const renderView = () => {
     switch (view) {
       case 'dashboard': return <DashboardView {...sharedProps} />
       case 'tasks': return <TasksView {...sharedProps} />
       case 'leaderboard': return <LeaderboardView users={users} tasks={tasks} />
-      case 'rewards': return <RewardsView currentUser={currentUser} setCurrentUser={setCurrentUser} />
+      case 'rewards': return <RewardsView currentUser={currentUser} redemptions={redemptions} />
       case 'social': return <SocialView currentUser={currentUser} users={users} messages={messages} setMessages={setMessages} />
       case 'profile': return <ProfileView currentUser={currentUser} setCurrentUser={setCurrentUser} tasks={tasks} />
     }
@@ -2198,6 +2204,7 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [checkingSession, setCheckingSession] = useState(true)
+  const [redemptions, setRedemptions] = useState<{ id: string; userId: string; rewardId: string; cost: number }[]>([])
 
   function mapProfileToUser(p: any): User {
     return { id: p.id, name: p.name, role: p.role, avatar: p.avatar, exp: p.exp, teamId: p.team_id, department: p.department }
@@ -2218,6 +2225,21 @@ export default function App() {
     rejectedReason: t.rejected_reason ?? undefined,
   }
 }
+
+  //=============================================================================
+  useEffect(() => {
+  if (!session) return
+  supabase.from('redemptions').select('*').then(({ data }) => data && setRedemptions(
+    data.map(r => ({ id: r.id, userId: r.user_id, rewardId: r.reward_id, cost: r.cost }))
+  ))
+  const channel = supabase.channel('redemptions-changes')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'redemptions' }, payload => {
+      const r = payload.new
+      setRedemptions(prev => [...prev, { id: r.id, userId: r.user_id, rewardId: r.reward_id, cost: r.cost }])
+    }).subscribe()
+  return () => { supabase.removeChannel(channel) }
+}, [session])
+  
   // Kiểm tra xem đã đăng nhập từ trước chưa (giữ session khi refresh trang)
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -2306,6 +2328,7 @@ useEffect(() => {
       setTasks={setTasks}
       messages={messages}
       setMessages={setMessages}
+      redemptions={redemptions}
     />
   )
 }
