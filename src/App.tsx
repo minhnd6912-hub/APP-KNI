@@ -2229,6 +2229,15 @@ export default function App() {
     })
     return () => listener.subscription.unsubscribe()
   }, [])
+  //==============================================================================
+  // Khi allUsers cập nhật (real-time), đồng bộ luôn currentProfile nếu có thay đổi
+useEffect(() => {
+  if (!currentProfile) return
+  const updated = allUsers.find(u => u.id === currentProfile.id)
+  if (updated && JSON.stringify(updated) !== JSON.stringify(currentProfile)) {
+    setCurrentProfile(updated)
+  }
+}, [allUsers])
 
   // Nạp profile của chính mình khi có session
   useEffect(() => {
@@ -2274,6 +2283,15 @@ export default function App() {
   return () => { supabase.removeChannel(channel) }
 }, [session])
 
+
+  // Khi allUsers cập nhật (real-time), đồng bộ luôn currentProfile nếu có thay đổi
+useEffect(() => {
+  if (!currentProfile) return
+  const updated = allUsers.find(u => u.id === currentProfile.id)
+  if (updated && JSON.stringify(updated) !== JSON.stringify(currentProfile)) {
+    setCurrentProfile(updated)
+  }
+}, [allUsers])
 
 
   if (checkingSession) return <div style={{ background: '#060610', minHeight: '100vh' }} />
