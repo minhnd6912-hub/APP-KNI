@@ -576,6 +576,11 @@ const PRIORITY_CONFIG = {
   medium: { label: 'Trung bình', color: '#f59e0b', bg: '#1a1000' },
   low: { label: 'Thấp', color: '#6b7280', bg: '#111118' },
 }
+const PRIORITY_EXP_LIMITS: Record<TaskPriority, { min: number; max: number; suggested: number; hint: string }> = {
+  low: { min: 20, max: 60, suggested: 30, hint: '💡 Việc dễ, xong trong ngày → nên cho 20–60 EXP' },
+  medium: { min: 60, max: 150, suggested: 80, hint: '💡 Việc vừa, làm 2–3 ngày → nên cho 60–150 EXP' },
+  high: { min: 150, max: 300, suggested: 200, hint: '💡 Việc khó, nhiều ngày/phức tạp → nên cho 150–300 EXP' },
+}
 const STATUS_CONFIG = {
   open: { label: 'Chưa bắt đầu', color: '#6b7280' },
   'in-progress': { label: 'Đang làm', color: '#06b6d4' },
@@ -1196,7 +1201,7 @@ const handleCreate = async () => {
     category: form.category, priority: form.priority, self_created: !isManager,
   })
   setShowModal(false)
-  setForm({ title: '', description: '', expReward: 50, dueDate: '', category: 'development', priority: 'medium', assignedTo: '', projectManager: '', supporters: [] })
+  setForm({ title: '', description: '', expReward: 80, dueDate: '', category: 'development', priority: 'medium', assignedTo: '', projectManager: '', supporters: [] })
 }
 
   const toggleSupporter = (uid: string) => {
@@ -1471,10 +1476,16 @@ const handleCreate = async () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">EXP thưởng</label>
-                  <input type="number" value={form.expReward} min={10} max={500}
+                  <input type="number" value={form.expReward}
+                    min={PRIORITY_EXP_LIMITS[form.priority].min} max={PRIORITY_EXP_LIMITS[form.priority].max}
                     onChange={e => setForm({ ...form, expReward: parseInt(e.target.value) || 0 })}
+                    onBlur={() => setForm(f => {
+                      const { min, max } = PRIORITY_EXP_LIMITS[f.priority]
+                      return { ...f, expReward: Math.min(Math.max(f.expReward, min), max) }
+                    })}
                     className="w-full px-3 py-2.5 rounded-lg text-amber-400 text-sm outline-none font-bold"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
+                  <p className="text-gray-600 text-[10px] mt-1.5 leading-relaxed">{PRIORITY_EXP_LIMITS[form.priority].hint}</p>
                 </div>
                 <div>
                   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Deadline</label>
@@ -1495,7 +1506,11 @@ const handleCreate = async () => {
                 </div>
                 <div>
                   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Ưu tiên</label>
-                  <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value as TaskPriority })}
+                  <select value={form.priority}
+                    onChange={e => {
+                      const newPriority = e.target.value as TaskPriority
+                      setForm(f => ({ ...f, priority: newPriority, expReward: PRIORITY_EXP_LIMITS[newPriority].suggested }))
+                    }}
                     className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
                     <option value="low">Thấp</option>
