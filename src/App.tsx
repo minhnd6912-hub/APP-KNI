@@ -1710,6 +1710,7 @@ function RewardsView({ currentUser, redemptions }: { currentUser: User; redempti
           <div className="text-gray-500 text-xs mb-0.5">Điểm khả dụng</div>
           <div className="text-amber-400 text-2xl font-black" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{availablePoints.toLocaleString()} ⚡</div>
         </div>
+        </div>
 
       {notice && (
         <div className="mb-5 p-3 rounded-xl text-center text-green-400 text-sm font-medium animate-slide-up"
@@ -1718,7 +1719,7 @@ function RewardsView({ currentUser, redemptions }: { currentUser: User; redempti
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {REWARDS.map(r => {
-          const can = currentUser.exp >= r.cost
+          const can = availablePoints >= r.cost
           const done = redeemed.includes(r.id)
           return (
             <div key={r.id} className="rounded-xl p-5 flex flex-col transition-all hover:-translate-y-0.5"
