@@ -47,6 +47,7 @@ interface Task {
   submissionNote?: string
   submittedAt?: string
   rejectedReason?: string
+  startDate?: string
 }
 
 interface Message {
@@ -580,6 +581,16 @@ const PRIORITY_EXP_LIMITS: Record<TaskPriority, { min: number; max: number; sugg
   low: { min: 20, max: 60, suggested: 30, hint: '💡 Việc dễ, xong trong ngày → nên cho 20–60 EXP' },
   medium: { min: 60, max: 150, suggested: 80, hint: '💡 Việc vừa, làm 2–3 ngày → nên cho 60–150 EXP' },
   high: { min: 150, max: 300, suggested: 200, hint: '💡 Việc khó, nhiều ngày/phức tạp → nên cho 150–300 EXP' },
+}
+function suggestExp(priority: TaskPriority, startDate: string, dueDate: string): number {
+  const limits = PRIORITY_EXP_LIMITS[priority]
+  if (!startDate || !dueDate) return limits.suggested
+
+  const days = Math.round((new Date(dueDate).getTime() - new Date(startDate).getTime()) / 86400000)
+  const clampedDays = Math.min(Math.max(days, 1), 7)
+  const ratio = (7 - clampedDays) / 6 // 1 ngày → ratio 1 (điểm cao nhất khung); 7+ ngày → ratio 0 (điểm thấp nhất khung)
+
+  return Math.round(limits.min + (limits.max - limits.min) * ratio)
 }
 const STATUS_CONFIG = {
   open: { label: 'Chưa bắt đầu', color: '#6b7280' },
@@ -1121,8 +1132,9 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
   const [supportersOpen, setSupportersOpen] = useState(false)
   const supportersRef = useRef<HTMLDivElement>(null)
   const [submittingTask, setSubmittingTask] = useState<Task | null>(null)
+  const todayStr = new Date().toISOString().split('T')[0]
   const [form, setForm] = useState({
-    title: '', description: '', expReward: 50, dueDate: '',
+    title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '',
     category: 'development', priority: 'medium' as TaskPriority,
     assignedTo: '', projectManager: '', supporters: [] as string[],
   })
@@ -1197,13 +1209,13 @@ const handleCreate = async () => {
     status: 'open', assigned_to: isManager ? (form.assignedTo || null) : currentUser.id,
     project_manager: form.projectManager || null, supporters: form.supporters,
     created_by: currentUser.id,
+    start_date: form.startDate,
     due_date: form.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
     category: form.category, priority: form.priority, self_created: !isManager,
   })
   setShowModal(false)
-  setForm({ title: '', description: '', expReward: 80, dueDate: '', category: 'development', priority: 'medium', assignedTo: '', projectManager: '', supporters: [] })
+  setForm({ title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '', category: 'development', priority: 'medium', assignedTo: '', projectManager: '', supporters: [] })
 }
-
   const toggleSupporter = (uid: string) => {
     setForm(f => ({
       ...f, supporters: f.supporters.includes(uid)
@@ -1473,7 +1485,7 @@ const handleCreate = async () => {
                   style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">EXP thưởng</label>
                   <input type="number" value={form.expReward}
@@ -1493,7 +1505,47 @@ const handleCreate = async () => {
                     className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a', colorScheme: 'dark' }} />
                 </div>
+              </div> */}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Ngày bắt đầu</label>
+                  <input type="date" value={form.startDate}
+                    onChange={e => {
+                      const startDate = e.target.value
+                      setForm(f => ({ ...f, startDate, expReward: suggestExp(f.priority, startDate, f.dueDate) }))
+                    }}
+                    className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
+                    style={{ background: '#14143a', border: '1px solid #2a2a5a', colorScheme: 'dark' }} />
+                </div>
+                <div>
+                  <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Hạn hoàn thành</label>
+                  <input type="date" value={form.dueDate} min={form.startDate || undefined}
+                    onChange={e => {
+                      const dueDate = e.target.value
+                      setForm(f => ({ ...f, dueDate, expReward: suggestExp(f.priority, f.startDate, dueDate) }))
+                    }}
+                    className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
+                    style={{ background: '#14143a', border: '1px solid #2a2a5a', colorScheme: 'dark' }} />
+                </div>
               </div>
+
+<div>
+  <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">EXP thưởng</label>
+  <input type="number" value={form.expReward}
+    min={PRIORITY_EXP_LIMITS[form.priority].min} max={PRIORITY_EXP_LIMITS[form.priority].max}
+    onChange={e => setForm({ ...form, expReward: parseInt(e.target.value) || 0 })}
+    onBlur={() => setForm(f => {
+      const { min, max } = PRIORITY_EXP_LIMITS[f.priority]
+      return { ...f, expReward: Math.min(Math.max(f.expReward, min), max) }
+    })}
+    className="w-full px-3 py-2.5 rounded-lg text-amber-400 text-sm outline-none font-bold"
+    style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
+  <p className="text-gray-600 text-[10px] mt-1.5 leading-relaxed">
+    {PRIORITY_EXP_LIMITS[form.priority].hint}
+    {form.startDate && form.dueDate && ` · Gợi ý theo thời gian: ${suggestExp(form.priority, form.startDate, form.dueDate)} EXP`}
+  </p>
+</div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -1509,7 +1561,7 @@ const handleCreate = async () => {
                   <select value={form.priority}
                     onChange={e => {
                       const newPriority = e.target.value as TaskPriority
-                      setForm(f => ({ ...f, priority: newPriority, expReward: PRIORITY_EXP_LIMITS[newPriority].suggested }))
+                      setForm(f => ({ ...f, priority: newPriority, expReward: suggestExp(newPriority, f.startDate, f.dueDate) }))
                     }}
                     className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
@@ -2238,6 +2290,7 @@ export default function App() {
     submissionNote: t.submission_note ?? undefined,
     submittedAt: t.submitted_at ?? undefined,
     rejectedReason: t.rejected_reason ?? undefined,
+    startDate: t.start_date,
   }
 }
 
