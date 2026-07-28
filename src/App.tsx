@@ -1707,10 +1707,9 @@ function RewardsView({ currentUser, redemptions }: { currentUser: User; redempti
           <p className="text-gray-500 text-sm">Đổi EXP lấy phần thưởng xứng đáng</p>
         </div>
         <div className="px-5 py-3 rounded-xl text-right" style={{ background: '#1a1200', border: '1px solid #3a2800' }}>
-          <div className="text-gray-500 text-xs mb-0.5">EXP hiện có</div>
-          <div className="text-amber-400 text-2xl font-black" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{currentUser.exp.toLocaleString()} ⚡</div>
+          <div className="text-gray-500 text-xs mb-0.5">Điểm khả dụng</div>
+          <div className="text-amber-400 text-2xl font-black" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{availablePoints.toLocaleString()} ⚡</div>
         </div>
-      </div>
 
       {notice && (
         <div className="mb-5 p-3 rounded-xl text-center text-green-400 text-sm font-medium animate-slide-up"
