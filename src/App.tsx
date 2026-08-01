@@ -1204,6 +1204,11 @@ const handleReject = async (task: Task) => {
 
 const handleCreate = async () => {
   if (!form.title.trim()) return
+  const { min, max } = PRIORITY_EXP_LIMITS[form.priority]
+  if (form.expReward < min || form.expReward > max) {
+    alert(`Điểm EXP phải nằm trong khoảng ${min}–${max} cho mức độ "${PRIORITY_CONFIG[form.priority].label}"`)
+    return
+  }
   await supabase.from('tasks').insert({
     title: form.title, description: form.description, exp_reward: form.expReward,
     status: 'open', assigned_to: isManager ? (form.assignedTo || null) : currentUser.id,
@@ -1533,18 +1538,16 @@ const handleCreate = async () => {
 <div>
   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">EXP thưởng</label>
   <input type="number" value={form.expReward}
-    min={PRIORITY_EXP_LIMITS[form.priority].min} max={PRIORITY_EXP_LIMITS[form.priority].max}
-    onChange={e => setForm({ ...form, expReward: parseInt(e.target.value) || 0 })}
-    onBlur={() => setForm(f => {
-      const { min, max } = PRIORITY_EXP_LIMITS[f.priority]
-      return { ...f, expReward: Math.min(Math.max(f.expReward, min), max) }
-    })}
-    className="w-full px-3 py-2.5 rounded-lg text-amber-400 text-sm outline-none font-bold"
-    style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
-  <p className="text-gray-600 text-[10px] mt-1.5 leading-relaxed">
-    {PRIORITY_EXP_LIMITS[form.priority].hint}
-    {form.startDate && form.dueDate && ` · Gợi ý theo thời gian: ${suggestExp(form.priority, form.startDate, form.dueDate)} EXP`}
-  </p>
+  onChange={e => setForm({ ...form, expReward: parseInt(e.target.value) || 0 })}
+  className="w-full px-3 py-2.5 rounded-lg text-amber-400 text-sm outline-none font-bold"
+  style={{
+    background: '#14143a',
+    border: `1px solid ${form.expReward < PRIORITY_EXP_LIMITS[form.priority].min || form.expReward > PRIORITY_EXP_LIMITS[form.priority].max ? '#f87171' : '#2a2a5a'}`,
+  }} />
+<p className="text-[10px] mt-1.5 leading-relaxed"
+  style={{ color: form.expReward < PRIORITY_EXP_LIMITS[form.priority].min || form.expReward > PRIORITY_EXP_LIMITS[form.priority].max ? '#f87171' : '#6b7280' }}>
+  {PRIORITY_EXP_LIMITS[form.priority].hint}
+</p>
 </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
