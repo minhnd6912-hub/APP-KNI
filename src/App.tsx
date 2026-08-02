@@ -752,20 +752,25 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
 
   const team = TEAMS.find(t => t.id === directoryEntry.team_id)
 
-  const { error: profileError } = await supabase.from('profiles').insert({
-    id: data.user.id,
-    name: directoryEntry.full_name,
-    role: directoryEntry.role,
-    avatar,
-    exp: 0,
-    team_id: directoryEntry.team_id,
-    department: team?.name ?? '',
-  })
-  setLoading(false)
-  if (profileError) { setError(profileError.message); return }
-  onLoggedIn()
-}
-
+//   const { error: profileError } = await supabase.from('profiles').insert({
+//     id: data.user.id,
+//     name: directoryEntry.full_name,
+//     role: directoryEntry.role,
+//     avatar,
+//     exp: 0,
+//     team_id: directoryEntry.team_id,
+//     department: team?.name ?? '',
+//   })
+//   setLoading(false)
+//   if (profileError) { setError(profileError.message); return }
+//   onLoggedIn()
+// }
+    setLoading(false)
+    if (!data.session) {
+      setError('Đăng ký thành công! Kiểm tra email để xác nhận, sau đó quay lại đăng nhập.')
+      return
+    }}
+onLoggedIn()
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) return
     setError('')
@@ -851,36 +856,12 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
               {loading ? 'ĐANG XỬ LÝ...' : 'VÀO GAME ⚡'}
             </button>
           </div>
-        ) : step === 'role' ? (
-          /* --- BƯỚC 1 CỦA ĐĂNG KÝ: chọn vai trò (giữ nguyên như code gốc) --- */
-          <div className="rounded-2xl p-6 animate-slide-up" style={{ background: '#0e0e24', border: '1px solid #1e1e4a' }}>
-            <h2 className="text-white text-xl font-bold mb-1" style={{ fontFamily: 'Rajdhani, sans-serif' }}>Bạn là ai trong công ty?</h2>
-            <p className="text-gray-500 text-sm mb-5">Chọn vai trò để bắt đầu hành trình</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { r: 'manager' as Role, icon: '👑', title: 'Quản Lý', desc: 'Giao task, quản lý team và nhận EXP dựa trên hiệu suất cả team', tag: 'Team-based scoring', tagColor: '#a78bfa', bg: '#1a1040', border: '#2a1a6a' },
-                { r: 'employee' as Role, icon: '⚔️', title: 'Nhân Viên', desc: 'Nhận task, hoàn thành mục tiêu và kiếm EXP để đổi phần thưởng', tag: 'Individual scoring', tagColor: '#34d399', bg: '#0a1a10', border: '#1a4a2a' },
-              ].map(opt => (
-                <button key={opt.r} onClick={() => { setRole(opt.r); setStep('setup') }}
-                  className="p-6 rounded-xl text-left transition-all hover:scale-[1.02]"
-                  style={{ background: `linear-gradient(135deg, ${opt.bg}, #0e0e24)`, border: `1px solid ${opt.border}` }}>
-                  <div className="text-4xl mb-3">{opt.icon}</div>
-                  <div className="text-white font-bold text-lg mb-2" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{opt.title}</div>
-                  <div className="text-gray-400 text-xs mb-3 leading-relaxed">{opt.desc}</div>
-                  <div className="text-xs" style={{ color: opt.tagColor }}>⚡ {opt.tag}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
+        
+          ) : (
           /* --- BƯỚC 2 CỦA ĐĂNG KÝ: tên, avatar + email/password mới --- */
           <div className="rounded-2xl p-6 animate-slide-up" style={{ background: '#0e0e24', border: '1px solid #1e1e4a' }}>
-            <div className="flex items-center gap-3 mb-5">
-              <button onClick={() => setStep('role')} className="text-gray-500 hover:text-gray-300 text-sm">← Quay lại</button>
-              <div>
-                <h2 className="text-white text-xl font-bold" style={{ fontFamily: 'Rajdhani, sans-serif' }}>Tạo hồ sơ nhân vật</h2>
-                <p className="text-gray-600 text-xs">{role === 'manager' ? '👑 Quản Lý' : '⚔️ Nhân Viên'}</p>
-              </div>
+            <div className="mb-5">
+              <h2 className="text-white text-xl font-bold" style={{ fontFamily: 'Rajdhani, sans-serif' }}>Tạo hồ sơ nhân vật</h2>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
