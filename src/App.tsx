@@ -560,10 +560,23 @@ const REWARDS: Reward[] = [
 //   { id: 't6', name: 'Customer Support', emoji: '🎧' },
 // ]
 const TEAMS = [
-  { id: 't1', name: 'HR & IT', emoji: '🧑‍💻' },
-  { id: 't2', name: 'Design', emoji: '🎨' },
-  { id: 't3', name: 'Marketing', emoji: '📣' },
-  { id: 't4', name: 'Sales', emoji: '💼' },
+  { id: 't1a', name: 'KNI Office - Ban Giám đốc', emoji: '👑' },
+  { id: 't1b', name: 'KNI Office - Văn phòng HĐQT', emoji: '📋' },
+  { id: 't1c', name: 'KNI Office - Nhân sự-IT-Pháp chế', emoji: '🧑‍💻' },
+  { id: 't1d', name: 'KNI Office - Truyền thông-Marketing', emoji: '📣' },
+  { id: 't1e', name: 'KNI Office - Kế toán', emoji: '💰' },
+  { id: 't1f', name: 'KNI Office - Dự án', emoji: '🏗️' },
+  { id: 't1g', name: 'KNI Office - Hỗ trợ', emoji: '🚗' },
+  { id: 't2', name: 'First Steps', emoji: '🌱' },
+  { id: 't3a', name: 'Genki House - Điều hành', emoji: '👑' },
+  { id: 't3b', name: 'Genki House - Bếp', emoji: '🍳' },
+  { id: 't3c', name: 'Genki House - Y tế-Trị liệu', emoji: '⚕️' },
+  { id: 't3d', name: 'Genki House - Hoạt động-Chăm sóc', emoji: '🧘' },
+  { id: 't3e', name: 'Genki House - Kinh doanh-Lễ tân', emoji: '💼' },
+  { id: 't3f', name: 'Genki House - Hỗ trợ', emoji: '🧹' },
+  { id: 't4', name: 'Genki Farm', emoji: '🌾' },
+  { id: 't5', name: 'Les Sens Phú Quốc', emoji: '🏝️' },
+  { id: 't6', name: 'ACVN', emoji: '🎓' },
 ]
 
 
@@ -706,39 +719,52 @@ const STATUS_CONFIG = {
 
 function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
   const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup')
-  const [step, setStep] = useState<'role' | 'setup'>('role')
+  const [step] = useState<'setup'>('setup')
   const [role, setRole] = useState<Role>('employee')
   const [name, setName] = useState('')
   const [avatar, setAvatar] = useState<AvatarConfig>({ ...DEFAULT_AVATAR })
-  const [teamId, setTeamId] = useState(TEAMS[0].id)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSignUp = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) return
-    setError('')
-    setLoading(true)
+  if (!email.trim() || !password.trim()) return
+  setError('')
+  setLoading(true)
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
-    if (signUpError) { setLoading(false); setError(signUpError.message); return }
-    if (!data.user) { setLoading(false); setError('Kiểm tra email để xác nhận tài khoản, sau đó đăng nhập lại.'); return }
+  const { data: directoryEntry, error: lookupError } = await supabase
+    .from('employee_directory')
+    .select('*')
+    .eq('email', email.trim().toLowerCase())
+    .maybeSingle()
 
-    const team = TEAMS.find(t => t.id === teamId)!
-    const { error: profileError } = await supabase.from('profiles').insert({
-      id: data.user.id,
-      name: name.trim(),
-      role,
-      avatar,
-      exp: 0,
-      team_id: team.id,
-      department: team.name,
-})
+  if (lookupError) { setLoading(false); setError('Lỗi tra cứu: ' + lookupError.message); return }
+  if (!directoryEntry) {
     setLoading(false)
-    if (profileError) { setError(profileError.message); return }
-    onLoggedIn()
+    setError('Email này không có trong danh sách nhân viên công ty. Liên hệ quản trị viên để được thêm vào.')
+    return
   }
+
+  const { data, error: signUpError } = await supabase.auth.signUp({ email: email.trim().toLowerCase(), password })
+  if (signUpError) { setLoading(false); setError(signUpError.message); return }
+  if (!data.user) { setLoading(false); setError('Kiểm tra email để xác nhận tài khoản, sau đó đăng nhập lại.'); return }
+
+  const team = TEAMS.find(t => t.id === directoryEntry.team_id)
+
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: data.user.id,
+    name: directoryEntry.full_name,
+    role: directoryEntry.role,
+    avatar,
+    exp: 0,
+    team_id: directoryEntry.team_id,
+    department: team?.name ?? '',
+  })
+  setLoading(false)
+  if (profileError) { setError(profileError.message); return }
+  onLoggedIn()
+}
 
   const handleSignIn = async () => {
     if (!email.trim() || !password.trim()) return
@@ -779,7 +805,7 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
 
         {/* --- Chuyển đổi Đăng nhập / Đăng ký --- */}
         <div className="flex justify-center gap-2 mb-5">
-          <button onClick={() => { setAuthMode('signup'); setStep('role'); setError('') }}
+          <button onClick={() => { setAuthMode('signup'); setError('') }}
             className="px-5 py-1.5 rounded-full text-xs font-bold tracking-wide"
             style={{ background: authMode === 'signup' ? 'linear-gradient(135deg,#7c3aed,#f59e0b)' : '#14143a', color: authMode === 'signup' ? '#fff' : '#6b7280' }}>
             TẠO TÀI KHOẢN
@@ -873,14 +899,7 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
                   style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
               </div>
             </div>
-            <div className="mb-4">
-              <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Ngành / Phòng ban</label>
-              <select value={teamId} onChange={e => setTeamId(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl text-white outline-none"
-                style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
-                {TEAMS.map(t => <option key={t.id} value={t.id}>{t.emoji} {t.name}</option>)}
-              </select>
-            </div>
+          
             <div className="mb-4">
               <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mật khẩu</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
