@@ -540,15 +540,15 @@ const INITIAL_MESSAGES: Message[] = [
 ]
 
 const REWARDS: Reward[] = [
-  { id: 'r1', name: 'Voucher Highlands', description: 'Voucher coffee 100.000đ', cost: 200, emoji: '☕', category: 'Ẩm thực' },
-  { id: 'r2', name: 'Ngày nghỉ thêm', description: '1 ngày nghỉ có lương bổ sung', cost: 1000, emoji: '🏖️', category: 'Thời gian' },
-  { id: 'r3', name: 'Khóa học online', description: 'Udemy/Coursera course tự chọn', cost: 500, emoji: '🎓', category: 'Học tập' },
-  { id: 'r4', name: 'Team Lunch', description: 'Bữa trưa team tối đa 8 người', cost: 800, emoji: '🍜', category: 'Ẩm thực' },
-  { id: 'r5', name: 'Company Hoodie', description: 'Hoodie limited edition', cost: 350, emoji: '👕', category: 'Quà tặng' },
-  { id: 'r6', name: 'Gaming Chair', description: 'Ghế gaming ergonomic cao cấp', cost: 3000, emoji: '🪑', category: 'Thiết bị' },
-  { id: 'r7', name: 'WFH Half-day', description: 'Làm từ xa nửa ngày tự chọn', cost: 150, emoji: '🏠', category: 'Thời gian' },
-  { id: 'r8', name: 'Sách kỹ thuật', description: 'Sách chuyên ngành tự chọn', cost: 250, emoji: '📖', category: 'Học tập' },
-  { id: 'r9', name: 'Massage 1 giờ', description: 'Voucher massage thư giãn', cost: 400, emoji: '💆', category: 'Sức khỏe' },
+  { id: 'r1', name: 'Voucher WinMart', description: 'Voucher mua sắm 100.000đ', cost: 200, emoji: '🛒', category: 'Mua sắm' },
+  { id: 'r2', name: 'Nghỉ phép 1 ngày', description: '01 ngày nghỉ có hưởng lương', cost: 1000, emoji: '🏖️', category: 'Phúc lợi' },
+  { id: 'r3', name: 'Voucher Grab', description: 'Voucher GrabFood/GrabCar 200.000đ', cost: 500, emoji: '🛵', category: 'Phúc lợi' },
+  { id: 'r4', name: 'Team Lunch', description: 'Bữa trưa cùng team tối đa 8 người', cost: 800, emoji: '🍜', category: 'Ẩm thực' },
+  { id: 'r5', name: 'Voucher Shopee', description: 'Voucher mua sắm 150.000đ', cost: 350, emoji: '🛍️', category: 'Mua sắm' },
+  { id: 'r6', name: 'Combo phụ kiện', description: 'Chuột, bàn phím hoặc tai nghe', cost: 3000, emoji: '🖥️', category: 'Thiết bị' },
+  { id: 'r7', name: 'WFH 1 ngày', description: 'Làm việc từ xa 1 ngày', cost: 150, emoji: '🏠', category: 'Phúc lợi' },
+  { id: 'r8', name: 'Voucher CGV', description: 'Voucher xem phim 150.000đ', cost: 250, emoji: '🎬', category: 'Giải trí' },
+  { id: 'r9', name: 'Khám sức khỏe', description: 'Voucher khám sức khỏe 300.000đ', cost: 400, emoji: '🩺', category: 'Sức khỏe' },
 ]
 
 // const TEAMS = [
