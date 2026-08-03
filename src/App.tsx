@@ -727,6 +727,7 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [signupCode, setSignupCode] = useState('')
 
   const handleSignUp = async () => {
   if (!email.trim() || !password.trim()) return
@@ -734,17 +735,22 @@ function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
   setLoading(true)
 
   const { data: directoryEntry, error: lookupError } = await supabase
-    .from('employee_directory')
-    .select('*')
-    .eq('email', email.trim().toLowerCase())
-    .maybeSingle()
+  .from('employee_directory')
+  .select('*')
+  .eq('email', email.trim().toLowerCase())
+  .maybeSingle()
 
-  if (lookupError) { setLoading(false); setError('Lỗi tra cứu: ' + lookupError.message); return }
-  if (!directoryEntry) {
-    setLoading(false)
-    setError('Email này không có trong danh sách nhân viên công ty. Liên hệ quản trị viên để được thêm vào.')
-    return
-  }
+if (lookupError) { setLoading(false); setError('Lỗi tra cứu: ' + lookupError.message); return }
+if (!directoryEntry) {
+  setLoading(false)
+  setError('Email này không có trong danh sách nhân viên công ty.')
+  return
+}
+if (directoryEntry.signup_code !== signupCode.trim().toUpperCase()) {
+  setLoading(false)
+  setError('Mã xác nhận không đúng. Liên hệ quản trị viên để lấy lại mã.')
+  return
+}
 
   const { data, error: signUpError } = await supabase.auth.signUp({ email: email.trim().toLowerCase(), password })
   if (signUpError) { setLoading(false); setError(signUpError.message); return }
@@ -833,6 +839,13 @@ onLoggedIn()
               <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="ban@congty.com"
                 className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 outline-none"
+                style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
+            </div>
+            <div className="mb-4">
+              <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mã xác nhận (do công ty cấp)</label>
+              <input type="text" value={signupCode} onChange={e => setSignupCode(e.target.value)}
+                placeholder="VD: A3F9K2"
+                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 outline-none uppercase"
                 style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
             </div>
             <div className="mb-2">
