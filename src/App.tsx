@@ -841,13 +841,7 @@ onLoggedIn()
                 className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 outline-none"
                 style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
             </div>
-            <div className="mb-4">
-              <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mã xác nhận (do công ty cấp)</label>
-              <input type="text" value={signupCode} onChange={e => setSignupCode(e.target.value)}
-                placeholder="VD: A3F9K2"
-                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 outline-none uppercase"
-                style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
-            </div>
+
             <div className="mb-2">
               <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mật khẩu</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
@@ -893,7 +887,15 @@ onLoggedIn()
                   style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
               </div>
             </div>
-          
+            
+            <div className="mb-4">
+              <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mã xác nhận (do công ty cấp)</label>
+              <input type="text" value={signupCode} onChange={e => setSignupCode(e.target.value)}
+                placeholder="VD: A3F9K2"
+                className="w-full px-4 py-3 rounded-xl text-white placeholder-gray-600 outline-none uppercase"
+                style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
+            </div>
+
             <div className="mb-4">
               <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mật khẩu</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
