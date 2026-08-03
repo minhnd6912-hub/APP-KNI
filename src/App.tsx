@@ -1189,9 +1189,21 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
 
 const handleApprove = async (task: Task) => {
   await supabase.from('tasks').update({ status: 'completed' }).eq('id', task.id)
+
   if (task.assignedTo) {
     const assignee = users.find(u => u.id === task.assignedTo)
-    if (assignee) await supabase.from('profiles').update({ exp: assignee.exp + task.expReward }).eq('id', assignee.id)
+    if (assignee) {
+      // Cộng điểm cho nhân viên hoàn thành task
+      await supabase.from('profiles').update({ exp: assignee.exp + task.expReward }).eq('id', assignee.id)
+    }
+  }
+
+  // Chỉ cộng điểm cho quản lý NẾU task này có gán "QL dự án" (task mang tính team/dự án)
+  if (task.projectManager) {
+    const pm = users.find(u => u.id === task.projectManager)
+    if (pm) {
+      await supabase.from('profiles').update({ exp: pm.exp + task.expReward }).eq('id', pm.id)
+    }
   }
 }
 
