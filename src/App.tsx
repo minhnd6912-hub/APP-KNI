@@ -948,7 +948,7 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser, se
 }) {
   const { progress, needed, level } = getExpProgress(currentUser.exp)
   const isManager = currentUser.role === 'manager'
-  const myTasks = tasks.filter(t => t.assignedTo.includes(currentUser.id) || (t.selfCreated && t.createdBy === currentUser.id))
+  const myTasks = tasks.filter(t => t.assignedTo.includes(currentUser.id) || (t.selfCreated && t.createdBy === currentUser.id) || t.supporters.includes(currentUser.id))
   const pending = myTasks.filter(t => t.status !== 'completed')
   const teamExp = users.filter(u => u.teamId === currentUser.teamId).reduce((s, u) => s + u.exp, 0)
 
