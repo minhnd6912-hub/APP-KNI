@@ -1354,7 +1354,7 @@ const handleCreate = async () => {
           const assignees = task.assignedTo.map(getUserById).filter((u): u is User => !!u)
           const pms = task.projectManager.map(getUserById).filter((u): u is User => !!u)
           const pri = PRIORITY_CONFIG[task.priority]
-          const isMyTask = task.assignedTo.includes(currentUser.id)
+          const isMyTask = task.assignedTo.includes(currentUser.id) || task.supporters.includes(currentUser.id)
           const catColor = CATEGORY_COLORS[task.category] ?? '#6b7280'
 
           return (
