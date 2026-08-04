@@ -35,8 +35,10 @@ interface Task {
   description: string
   expReward: number
   status: TaskStatus
-  assignedTo?: string
-  projectManager?: string
+  // assignedTo?: string
+  // projectManager?: string
+  assignedTo: string[]
+  projectManager: string[]
   supporters: string[]
   createdBy: string
   dueDate: string
@@ -515,15 +517,25 @@ const MOCK_USERS: User[] = [
   { id: 'u8', name: 'Bùi Thanh Tú', role: 'employee', avatar: makeAvatar('#C68642', 1, '#D4AC0D', '#d97706', 2), exp: 980, teamId: 't2', department: 'Design' },
 ]
 
+// const INITIAL_TASKS: Task[] = [
+//   { id: 't1', title: 'Xây dựng API authentication', description: 'Implement JWT authentication với refresh token và blacklist', expReward: 150, status: 'in-progress', assignedTo: 'u3', projectManager: 'u1', supporters: ['u4', 'u5'], createdBy: 'u1', dueDate: '2026-07-30', category: 'development', priority: 'high', selfCreated: false },
+//   { id: 't2', title: 'Thiết kế UI Dashboard', description: 'Tạo Figma mockup cho trang dashboard chính theo Design System mới', expReward: 80, status: 'open', assignedTo: 'u6', projectManager: 'u2', supporters: ['u7'], createdBy: 'u2', dueDate: '2026-07-28', category: 'design', priority: 'medium', selfCreated: false },
+//   { id: 't3', title: 'Viết unit tests cho Payment', description: 'Coverage tối thiểu 80% cho toàn bộ module payment', expReward: 100, status: 'completed', assignedTo: 'u4', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-07-22', category: 'development', priority: 'high', selfCreated: false },
+//   { id: 't4', title: 'Tối ưu query database', description: 'Giảm response time của báo cáo xuống dưới 2 giây', expReward: 120, status: 'open', projectManager: 'u1', supporters: ['u3'], createdBy: 'u1', dueDate: '2026-08-05', category: 'development', priority: 'medium', selfCreated: false },
+//   { id: 't5', title: 'Học React Query', description: 'Tự học và áp dụng React Query vào dự án hiện tại', expReward: 60, status: 'in-progress', assignedTo: 'u3', supporters: [], createdBy: 'u3', dueDate: '2026-07-29', category: 'research', priority: 'low', selfCreated: true },
+//   { id: 't6', title: 'Review PR của team', description: 'Review ít nhất 5 pull request trong tuần này', expReward: 40, status: 'open', assignedTo: 'u5', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-07-26', category: 'development', priority: 'low', selfCreated: false },
+//   { id: 't7', title: 'Xây dựng Design System', description: 'Setup Storybook và tạo component library đầy đủ', expReward: 200, status: 'open', assignedTo: 'u7', projectManager: 'u2', supporters: ['u6', 'u8'], createdBy: 'u2', dueDate: '2026-08-10', category: 'design', priority: 'high', selfCreated: false },
+//   { id: 't8', title: 'Viết tài liệu API', description: 'Swagger docs đầy đủ cho tất cả API endpoints', expReward: 70, status: 'open', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-08-01', category: 'development', priority: 'medium', selfCreated: false },
+// ]
 const INITIAL_TASKS: Task[] = [
-  { id: 't1', title: 'Xây dựng API authentication', description: 'Implement JWT authentication với refresh token và blacklist', expReward: 150, status: 'in-progress', assignedTo: 'u3', projectManager: 'u1', supporters: ['u4', 'u5'], createdBy: 'u1', dueDate: '2026-07-30', category: 'development', priority: 'high', selfCreated: false },
-  { id: 't2', title: 'Thiết kế UI Dashboard', description: 'Tạo Figma mockup cho trang dashboard chính theo Design System mới', expReward: 80, status: 'open', assignedTo: 'u6', projectManager: 'u2', supporters: ['u7'], createdBy: 'u2', dueDate: '2026-07-28', category: 'design', priority: 'medium', selfCreated: false },
-  { id: 't3', title: 'Viết unit tests cho Payment', description: 'Coverage tối thiểu 80% cho toàn bộ module payment', expReward: 100, status: 'completed', assignedTo: 'u4', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-07-22', category: 'development', priority: 'high', selfCreated: false },
-  { id: 't4', title: 'Tối ưu query database', description: 'Giảm response time của báo cáo xuống dưới 2 giây', expReward: 120, status: 'open', projectManager: 'u1', supporters: ['u3'], createdBy: 'u1', dueDate: '2026-08-05', category: 'development', priority: 'medium', selfCreated: false },
-  { id: 't5', title: 'Học React Query', description: 'Tự học và áp dụng React Query vào dự án hiện tại', expReward: 60, status: 'in-progress', assignedTo: 'u3', supporters: [], createdBy: 'u3', dueDate: '2026-07-29', category: 'research', priority: 'low', selfCreated: true },
-  { id: 't6', title: 'Review PR của team', description: 'Review ít nhất 5 pull request trong tuần này', expReward: 40, status: 'open', assignedTo: 'u5', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-07-26', category: 'development', priority: 'low', selfCreated: false },
-  { id: 't7', title: 'Xây dựng Design System', description: 'Setup Storybook và tạo component library đầy đủ', expReward: 200, status: 'open', assignedTo: 'u7', projectManager: 'u2', supporters: ['u6', 'u8'], createdBy: 'u2', dueDate: '2026-08-10', category: 'design', priority: 'high', selfCreated: false },
-  { id: 't8', title: 'Viết tài liệu API', description: 'Swagger docs đầy đủ cho tất cả API endpoints', expReward: 70, status: 'open', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-08-01', category: 'development', priority: 'medium', selfCreated: false },
+  { id: 't1', title: 'Xây dựng API authentication', description: 'Implement JWT authentication với refresh token và blacklist', expReward: 150, status: 'in-progress', assignedTo: ['u3'], projectManager: ['u1'], supporters: ['u4', 'u5'], createdBy: 'u1', dueDate: '2026-07-30', category: 'development', priority: 'high', selfCreated: false },
+  { id: 't2', title: 'Thiết kế UI Dashboard', description: 'Tạo Figma mockup cho trang dashboard chính theo Design System mới', expReward: 80, status: 'open', assignedTo: ['u6'], projectManager: ['u2'], supporters: ['u7'], createdBy: 'u2', dueDate: '2026-07-28', category: 'design', priority: 'medium', selfCreated: false },
+  { id: 't3', title: 'Viết unit tests cho Payment', description: 'Coverage tối thiểu 80% cho toàn bộ module payment', expReward: 100, status: 'completed', assignedTo: ['u4'], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-07-22', category: 'development', priority: 'high', selfCreated: false },
+  { id: 't4', title: 'Tối ưu query database', description: 'Giảm response time của báo cáo xuống dưới 2 giây', expReward: 120, status: 'open', assignedTo: [], projectManager: ['u1'], supporters: ['u3'], createdBy: 'u1', dueDate: '2026-08-05', category: 'development', priority: 'medium', selfCreated: false },
+  { id: 't5', title: 'Học React Query', description: 'Tự học và áp dụng React Query vào dự án hiện tại', expReward: 60, status: 'in-progress', assignedTo: ['u3'], projectManager: [], supporters: [], createdBy: 'u3', dueDate: '2026-07-29', category: 'research', priority: 'low', selfCreated: true },
+  { id: 't6', title: 'Review PR của team', description: 'Review ít nhất 5 pull request trong tuần này', expReward: 40, status: 'open', assignedTo: ['u5'], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-07-26', category: 'development', priority: 'low', selfCreated: false },
+  { id: 't7', title: 'Xây dựng Design System', description: 'Setup Storybook và tạo component library đầy đủ', expReward: 200, status: 'open', assignedTo: ['u7'], projectManager: ['u2'], supporters: ['u6', 'u8'], createdBy: 'u2', dueDate: '2026-08-10', category: 'design', priority: 'high', selfCreated: false },
+  { id: 't8', title: 'Viết tài liệu API', description: 'Swagger docs đầy đủ cho tất cả API endpoints', expReward: 70, status: 'open', assignedTo: [], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-08-01', category: 'development', priority: 'medium', selfCreated: false },
 ]
 
 const INITIAL_MESSAGES: Message[] = [
@@ -605,6 +617,8 @@ function suggestExp(priority: TaskPriority, startDate: string, dueDate: string):
 
   return Math.round(limits.min + (limits.max - limits.min) * ratio)
 }
+// % của EXP gốc mà mỗi người "Hỗ trợ" nhận được khi task hoàn thành (Phụ trách/PM luôn nhận đủ 100%)
+const SUPPORTER_EXP_PERCENT = 0.3
 const STATUS_CONFIG = {
   open: { label: 'Chưa bắt đầu', color: '#6b7280' },
   'in-progress': { label: 'Đang làm', color: '#06b6d4' },
@@ -934,7 +948,7 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser, se
 }) {
   const { progress, needed, level } = getExpProgress(currentUser.exp)
   const isManager = currentUser.role === 'manager'
-  const myTasks = tasks.filter(t => t.assignedTo === currentUser.id || (t.selfCreated && t.createdBy === currentUser.id))
+  const myTasks = tasks.filter(t => t.assignedTo.includes(currentUser.id) || (t.selfCreated && t.createdBy === currentUser.id))
   const pending = myTasks.filter(t => t.status !== 'completed')
   const teamExp = users.filter(u => u.teamId === currentUser.teamId).reduce((s, u) => s + u.exp, 0)
 
@@ -1024,7 +1038,7 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser, se
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-amber-400 font-bold text-sm" style={{ fontFamily: 'Rajdhani, sans-serif' }}>+{task.expReward}</span>
-                  {task.assignedTo === currentUser.id && task.status === 'in-progress' && (
+                  {task.assignedTo.includes(currentUser.id) && task.status === 'in-progress' && (
                     <button onClick={() => setView('tasks')}
                       className="text-xs px-3 py-1 rounded-lg font-semibold" style={{ background: '#1a1a40', color: '#a78bfa' }}>
                       Vào nộp task →
@@ -1136,6 +1150,59 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
   )
 }
 
+//====================MultiUserSelect======================
+// Dropdown chọn nhiều người dùng chung (Phụ trách / PM / Hỗ trợ)
+function MultiUserSelect({ label, options, selected, onToggle, placeholder = 'Chọn...', badge }: {
+  label: string; options: User[]; selected: string[]; onToggle: (id: string) => void
+  placeholder?: string; badge?: string
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">
+        {label} {selected.length > 0 && <span className="text-violet-400">({selected.length} được chọn)</span>}
+      </label>
+      <button onClick={() => setOpen(!open)}
+        className="w-full px-3 py-2.5 rounded-lg text-sm text-left flex items-center justify-between"
+        style={{ background: '#14143a', border: '1px solid #2a2a5a', color: selected.length > 0 ? '#e2e8f0' : '#6b7280' }}>
+        <span>
+          {selected.length === 0 ? placeholder
+            : selected.map(sid => options.find(u => u.id === sid)?.name.split(' ').slice(-1)[0]).join(', ')}
+        </span>
+        <span className="text-gray-500">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="absolute z-10 top-full left-0 right-0 mt-1 rounded-xl overflow-hidden max-h-60 overflow-y-auto"
+          style={{ background: '#14143a', border: '1px solid #2a2a5a', boxShadow: '0 8px 24px #00000060' }}>
+          {options.map(u => (
+            <label key={u.id}
+              className="flex items-center gap-2.5 px-3 py-2.5 cursor-pointer transition-colors hover:bg-[#1e1e4a]">
+              <input type="checkbox" checked={selected.includes(u.id)} onChange={() => onToggle(u.id)}
+                className="w-4 h-4 rounded accent-violet-500" />
+              <CharAvatar user={u} size={24} />
+              <span className="text-white text-sm flex-1">{u.name}</span>
+              {badge && u.role === 'manager' && (
+                <span className="text-[9px] px-1 rounded" style={{ background: '#1a0a3a', color: '#a78bfa' }}>{badge}</span>
+              )}
+              <LevelBadge exp={u.exp} />
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ==================== TASKS VIEW ====================
 
 function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
@@ -1144,33 +1211,23 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
 }) {
   const [filter, setFilter] = useState<'all' | 'mine' | 'open' | 'done'>('all')
   const [showModal, setShowModal] = useState(false)
-  const [supportersOpen, setSupportersOpen] = useState(false)
-  const supportersRef = useRef<HTMLDivElement>(null)
   const [submittingTask, setSubmittingTask] = useState<Task | null>(null)
   const todayStr = new Date().toISOString().split('T')[0]
   const [form, setForm] = useState({
     title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '',
     category: 'development', priority: 'medium' as TaskPriority,
-    assignedTo: '', projectManager: '', supporters: [] as string[],
+    assignedTo: [] as string[], projectManager: [] as string[], supporters: [] as string[],
   })
 
   const isManager = currentUser.role === 'manager'
   const employees = users.filter(u => u.role === 'employee' && u.teamId === currentUser.teamId)
   const teamUsers = users.filter(u => u.teamId === currentUser.teamId)
 
-  useEffect(() => {
-    const h = (e: MouseEvent) => {
-      if (supportersRef.current && !supportersRef.current.contains(e.target as Node)) setSupportersOpen(false)
-    }
-    document.addEventListener('mousedown', h)
-    return () => document.removeEventListener('mousedown', h)
-  }, [])
-
   const visible = tasks.filter(t => {
-    const isMyTask = t.assignedTo === currentUser.id || (t.selfCreated && t.createdBy === currentUser.id)
-    const assignee = users.find(u => u.id === t.assignedTo)
+    const isMyTask = t.assignedTo.includes(currentUser.id) || (t.selfCreated && t.createdBy === currentUser.id)
+    const assignees = users.filter(u => t.assignedTo.includes(u.id))
     const inScope = isManager
-      ? (t.createdBy === currentUser.id || assignee?.teamId === currentUser.teamId)
+      ? (t.createdBy === currentUser.id || assignees.some(a => a.teamId === currentUser.teamId))
       : isMyTask
     if (!inScope) return false
     if (filter === 'mine') return isMyTask
@@ -1205,19 +1262,28 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
 const handleApprove = async (task: Task) => {
   await supabase.from('tasks').update({ status: 'completed' }).eq('id', task.id)
 
-  if (task.assignedTo) {
-    const assignee = users.find(u => u.id === task.assignedTo)
+  // Mỗi người Phụ trách nhận đủ 100% EXP (không chia, dù có nhiều người)
+  for (const uid of task.assignedTo) {
+    const assignee = users.find(u => u.id === uid)
     if (assignee) {
-      // Cộng điểm cho nhân viên hoàn thành task
       await supabase.from('profiles').update({ exp: assignee.exp + task.expReward }).eq('id', assignee.id)
     }
   }
 
-  // Chỉ cộng điểm cho quản lý NẾU task này có gán "QL dự án" (task mang tính team/dự án)
-  if (task.projectManager) {
-    const pm = users.find(u => u.id === task.projectManager)
+  // Mỗi Quản lý dự án (PM) cũng nhận đủ 100% EXP (dù có nhiều người)
+  for (const uid of task.projectManager) {
+    const pm = users.find(u => u.id === uid)
     if (pm) {
       await supabase.from('profiles').update({ exp: pm.exp + task.expReward }).eq('id', pm.id)
+    }
+  }
+
+  // Người hỗ trợ nhận % của EXP gốc
+  const supportExp = Math.round(task.expReward * SUPPORTER_EXP_PERCENT)
+  for (const uid of task.supporters) {
+    const supporter = users.find(u => u.id === uid)
+    if (supporter) {
+      await supabase.from('profiles').update({ exp: supporter.exp + supportExp }).eq('id', supporter.id)
     }
   }
 }
@@ -1238,21 +1304,21 @@ const handleCreate = async () => {
   }
   await supabase.from('tasks').insert({
     title: form.title, description: form.description, exp_reward: form.expReward,
-    status: 'open', assigned_to: isManager ? (form.assignedTo || null) : currentUser.id,
-    project_manager: form.projectManager || null, supporters: form.supporters,
+    status: 'open', assigned_to: isManager ? form.assignedTo : [currentUser.id],
+    project_manager: form.projectManager, supporters: form.supporters,
     created_by: currentUser.id,
     start_date: form.startDate,
     due_date: form.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
     category: form.category, priority: form.priority, self_created: !isManager,
   })
   setShowModal(false)
-  setForm({ title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '', category: 'development', priority: 'medium', assignedTo: '', projectManager: '', supporters: [] })
+  setForm({ title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '', category: 'development', priority: 'medium', assignedTo: [], projectManager: [], supporters: [] })
 }
-  const toggleSupporter = (uid: string) => {
+  const toggleFormArray = (field: 'assignedTo' | 'projectManager' | 'supporters', uid: string) => {
     setForm(f => ({
-      ...f, supporters: f.supporters.includes(uid)
-        ? f.supporters.filter(s => s !== uid)
-        : [...f.supporters, uid],
+      ...f, [field]: f[field].includes(uid)
+        ? f[field].filter(s => s !== uid)
+        : [...f[field], uid],
     }))
   }
 
@@ -1285,10 +1351,10 @@ const handleCreate = async () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {visible.map(task => {
-          const assignee = getUserById(task.assignedTo)
-          const pm = getUserById(task.projectManager)
+          const assignees = task.assignedTo.map(getUserById).filter((u): u is User => !!u)
+          const pms = task.projectManager.map(getUserById).filter((u): u is User => !!u)
           const pri = PRIORITY_CONFIG[task.priority]
-          const isMyTask = task.assignedTo === currentUser.id
+          const isMyTask = task.assignedTo.includes(currentUser.id)
           const catColor = CATEGORY_COLORS[task.category] ?? '#6b7280'
 
           return (
@@ -1320,24 +1386,32 @@ const handleCreate = async () => {
 
               {/* People section */}
               <div className="space-y-1.5 mb-3">
-                {/* Assignee */}
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-700 text-[10px] w-14 flex-shrink-0">Phụ trách:</span>
-                  {assignee ? (
-                    <div className="flex items-center gap-1.5">
-                      <CharAvatar user={assignee} size={20} />
-                      <span className="text-gray-400 text-xs">{assignee.name.split(' ').slice(-1)[0]}</span>
+                {/* Assignees (có thể nhiều người) */}
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-700 text-[10px] w-14 flex-shrink-0 mt-0.5">Phụ trách:</span>
+                  {assignees.length > 0 ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {assignees.map(a => (
+                        <div key={a.id} className="flex items-center gap-1">
+                          <CharAvatar user={a} size={20} />
+                          <span className="text-gray-400 text-xs">{a.name.split(' ').slice(-1)[0]}</span>
+                        </div>
+                      ))}
                     </div>
                   ) : <span className="text-gray-700 text-xs italic">Chưa giao</span>}
                 </div>
 
-                {/* Project Manager */}
-                {pm && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-700 text-[10px] w-14 flex-shrink-0">QL dự án:</span>
-                    <div className="flex items-center gap-1.5">
-                      <CharAvatar user={pm} size={20} />
-                      <span className="text-gray-400 text-xs">{pm.name.split(' ').slice(-1)[0]}</span>
+                {/* Project Managers (có thể nhiều người) */}
+                {pms.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="text-gray-700 text-[10px] w-14 flex-shrink-0 mt-0.5">QL dự án:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {pms.map(pm => (
+                        <div key={pm.id} className="flex items-center gap-1">
+                          <CharAvatar user={pm} size={20} />
+                          <span className="text-gray-400 text-xs">{pm.name.split(' ').slice(-1)[0]}</span>
+                        </div>
+                      ))}
                       <span className="text-[9px] px-1 rounded" style={{ background: '#1a0a3a', color: '#a78bfa' }}>PM</span>
                     </div>
                   </div>
@@ -1444,7 +1518,7 @@ const handleCreate = async () => {
                   </div>
                 </div>
 
-              ) : task.status === 'submitted' && task.assignedTo === currentUser.id ? (
+              ) : task.status === 'submitted' && task.assignedTo.includes(currentUser.id) ? (
                 <span className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: '#1a1a40', color: '#a78bfa' }}>
                   ⏳ Đang chờ quản lý duyệt
                 </span>
@@ -1604,55 +1678,27 @@ const handleCreate = async () => {
 
               {isManager && (
                 <>
-                  <div>
-                    <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Giao cho (Phụ trách)</label>
-                    <select value={form.assignedTo} onChange={e => setForm({ ...form, assignedTo: e.target.value })}
-                      className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
-                      style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
-                      <option value="">Chưa giao</option>
-                      {employees.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                    </select>
-                  </div>
+                  <MultiUserSelect
+                    label="Giao cho (Phụ trách) — mỗi người nhận đủ 100% EXP"
+                    options={employees}
+                    selected={form.assignedTo}
+                    onToggle={uid => toggleFormArray('assignedTo', uid)}
+                    placeholder="Chưa giao" />
 
-                  <div>
-                    <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Quản lý dự án (PM)</label>
-                    <select value={form.projectManager} onChange={e => setForm({ ...form, projectManager: e.target.value })}
-                      className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
-                      style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
-                      <option value="">Chọn PM</option>
-                      {teamUsers.map(u => <option key={u.id} value={u.id}>{u.name} {u.role === 'manager' ? '(Manager)' : ''}</option>)}
-                    </select>
-                  </div>
+                  <MultiUserSelect
+                    label="Quản lý dự án (PM) — mỗi người nhận đủ 100% EXP"
+                    options={teamUsers}
+                    selected={form.projectManager}
+                    onToggle={uid => toggleFormArray('projectManager', uid)}
+                    placeholder="Chọn PM..."
+                    badge="PM" />
 
-                  <div ref={supportersRef} className="relative">
-                    <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">
-                      Người hỗ trợ {form.supporters.length > 0 && <span className="text-violet-400">({form.supporters.length} được chọn)</span>}
-                    </label>
-                    <button onClick={() => setSupportersOpen(!supportersOpen)}
-                      className="w-full px-3 py-2.5 rounded-lg text-sm text-left flex items-center justify-between"
-                      style={{ background: '#14143a', border: '1px solid #2a2a5a', color: form.supporters.length > 0 ? '#e2e8f0' : '#6b7280' }}>
-                      <span>
-                        {form.supporters.length === 0 ? 'Chọn người hỗ trợ...'
-                          : form.supporters.map(sid => users.find(u => u.id === sid)?.name.split(' ').slice(-1)[0]).join(', ')}
-                      </span>
-                      <span className="text-gray-500">{supportersOpen ? '▲' : '▼'}</span>
-                    </button>
-                    {supportersOpen && (
-                      <div className="absolute z-10 top-full left-0 right-0 mt-1 rounded-xl overflow-hidden"
-                        style={{ background: '#14143a', border: '1px solid #2a2a5a', boxShadow: '0 8px 24px #00000060' }}>
-                        {employees.map(emp => (
-                          <label key={emp.id}
-                            className="flex items-center gap-2.5 px-3 py-2.5 cursor-pointer transition-colors hover:bg-[#1e1e4a]">
-                            <input type="checkbox" checked={form.supporters.includes(emp.id)} onChange={() => toggleSupporter(emp.id)}
-                              className="w-4 h-4 rounded accent-violet-500" />
-                            <CharAvatar user={emp} size={24} />
-                            <span className="text-white text-sm">{emp.name}</span>
-                            <LevelBadge exp={emp.exp} />
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <MultiUserSelect
+                    label={`Người hỗ trợ — mỗi người nhận ${Math.round(SUPPORTER_EXP_PERCENT * 100)}% EXP`}
+                    options={employees}
+                    selected={form.supporters}
+                    onToggle={uid => toggleFormArray('supporters', uid)}
+                    placeholder="Chọn người hỗ trợ..." />
                 </>
               )}
 
@@ -1683,7 +1729,7 @@ function LeaderboardView({ users, tasks }: { users: User[]; tasks: Task[] }) {
   const teams = TEAMS.map(team => {
     const members = users.filter(u => u.teamId === team.id)
     const totalExp = members.reduce((s, u) => s + u.exp, 0)
-    const done = tasks.filter(t => t.status === 'completed' && members.some(u => u.id === t.assignedTo)).length
+    const done = tasks.filter(t => t.status === 'completed' && members.some(u => t.assignedTo.includes(u.id))).length
     return { ...team, totalExp, memberCount: members.length, done, manager: users.find(u => u.teamId === team.id && u.role === 'manager') }
   }).sort((a, b) => b.totalExp - a.totalExp)
   const medals = ['🥇', '🥈', '🥉']
@@ -1708,7 +1754,7 @@ function LeaderboardView({ users, tasks }: { users: User[]; tasks: Task[] }) {
       {tab === 'individual' ? (
         <div className="space-y-3">
           {sorted.map((user, i) => {
-            const done = tasks.filter(t => t.status === 'completed' && t.assignedTo === user.id).length
+            const done = tasks.filter(t => t.status === 'completed' && t.assignedTo.includes(user.id)).length
             return (
               <div key={user.id} className="rounded-xl p-4 flex items-center gap-3 transition-all hover:translate-x-1"
                 style={{
@@ -2048,7 +2094,7 @@ function ProfileView({ currentUser, setCurrentUser, tasks }: {
   const [draftAvatar, setDraftAvatar] = useState<AvatarConfig>(currentUser.avatar)
 
   const { progress, needed, level } = getExpProgress(currentUser.exp)
-  const myDone = tasks.filter(t => t.status === 'completed' && (t.assignedTo === currentUser.id || (t.selfCreated && t.createdBy === currentUser.id)))
+  const myDone = tasks.filter(t => t.status === 'completed' && (t.assignedTo.includes(currentUser.id) || (t.selfCreated && t.createdBy === currentUser.id)))
   const selfMade = tasks.filter(t => t.selfCreated && t.createdBy === currentUser.id)
 
   const achievements = [
@@ -2091,7 +2137,7 @@ function ProfileView({ currentUser, setCurrentUser, tasks }: {
             <h4 className="text-white font-bold mb-3 text-sm" style={{ fontFamily: 'Rajdhani, sans-serif' }}>📊 Thống kê</h4>
             {[
               ['Task hoàn thành', myDone.length],
-              ['Đang làm', tasks.filter(t => t.status === 'in-progress' && t.assignedTo === currentUser.id).length],
+              ['Đang làm', tasks.filter(t => t.status === 'in-progress' && t.assignedTo.includes(currentUser.id)).length],
               ['Task tự tạo', selfMade.length],
               ['Cấp độ', `Lv.${level}`],
             ].map(([lbl, val]) => (
@@ -2313,7 +2359,7 @@ export default function App() {
   function mapDbTask(t: any): Task {
   return {
     id: t.id, title: t.title, description: t.description, expReward: t.exp_reward,
-    status: t.status, assignedTo: t.assigned_to ?? undefined, projectManager: t.project_manager ?? undefined,
+    status: t.status, assignedTo: t.assigned_to ?? [], projectManager: t.project_manager ?? [],
     supporters: t.supporters ?? [], createdBy: t.created_by, dueDate: t.due_date,
     category: t.category, priority: t.priority, selfCreated: t.self_created,
     submissionFileUrl: t.submission_file_url ?? undefined,
