@@ -2087,11 +2087,17 @@ function SocialView({ currentUser, users, messages, setMessages }: {
 
 // ==================== PROFILE ====================
 
+// function ProfileView({ currentUser, setCurrentUser, tasks }: {
+//   currentUser: User; setCurrentUser: (u: User) => void; tasks: Task[]
+// }) {
+//   const [editing, setEditing] = useState(false)
+//   const [draftAvatar, setDraftAvatar] = useState<AvatarConfig>(currentUser.avatar)
 function ProfileView({ currentUser, setCurrentUser, tasks }: {
   currentUser: User; setCurrentUser: (u: User) => void; tasks: Task[]
 }) {
   const [editing, setEditing] = useState(false)
   const [draftAvatar, setDraftAvatar] = useState<AvatarConfig>(currentUser.avatar)
+  const [draftName, setDraftName] = useState(currentUser.name)
 
   const { progress, needed, level } = getExpProgress(currentUser.exp)
   const myDone = tasks.filter(t => t.status === 'completed' && (t.assignedTo.includes(currentUser.id) || (t.selfCreated && t.createdBy === currentUser.id)))
@@ -2125,10 +2131,10 @@ function ProfileView({ currentUser, setCurrentUser, tasks }: {
             <div className="h-2 rounded-full overflow-hidden" style={{ background: '#1a1a3a' }}>
               <div className="h-full rounded-full" style={{ width: `${progress}%`, background: 'linear-gradient(90deg,#7c3aed,#f59e0b)' }} />
             </div>
-            <button onClick={() => { setDraftAvatar(currentUser.avatar); setEditing(!editing) }}
+            <button onClick={() => { setDraftAvatar(currentUser.avatar); setDraftName(currentUser.name); setEditing(!editing) }}
               className="mt-4 w-full py-2 rounded-lg text-sm font-medium transition-all"
               style={{ background: editing ? '#7c3aed' : '#14143a', color: editing ? '#fff' : '#6b7280', border: '1px solid #2a2a5a' }}>
-              {editing ? '↑ Đóng' : '🎭 Đổi nhân vật'}
+              {editing ? '↑ Đóng' : '🎭 Đổi tên & nhân vật'}
             </button>
           </div>
 
@@ -2166,12 +2172,26 @@ function ProfileView({ currentUser, setCurrentUser, tasks }: {
           {editing && (
             <div className="rounded-xl p-4 animate-slide-up" style={{ background: '#0e0e24', border: '1px solid #1e1e4a' }}>
               <h4 className="text-white font-bold mb-4" style={{ fontFamily: 'Rajdhani, sans-serif' }}>🎭 Tùy chỉnh nhân vật</h4>
+
+              <div className="mb-4">
+                <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Tên hiển thị</label>
+                <input value={draftName} onChange={e => setDraftName(e.target.value)} maxLength={40}
+                  placeholder="Nhập tên bạn muốn hiển thị..."
+                  className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
+                  style={{ background: '#14143a', border: '1px solid #2a2a5a' }} />
+              </div>
+
               <AvatarCreator value={draftAvatar} onChange={setDraftAvatar} />
               <div className="flex gap-3 mt-4">
                 <button onClick={() => setEditing(false)}
                   className="flex-1 py-2.5 rounded-lg text-gray-400 text-sm"
                   style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>Hủy</button>
-                <button onClick={() => { setCurrentUser({ ...currentUser, avatar: draftAvatar }); setEditing(false) }}
+                <button onClick={async () => {
+                  const trimmed = draftName.trim() || currentUser.name
+                  await supabase.from('profiles').update({ name: trimmed, avatar: draftAvatar }).eq('id', currentUser.id)
+                  setCurrentUser({ ...currentUser, name: trimmed, avatar: draftAvatar })
+                  setEditing(false)
+                }}
                   className="flex-1 py-2.5 rounded-lg font-bold text-white text-sm"
                   style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)' }}>Lưu thay đổi</button>
               </div>
