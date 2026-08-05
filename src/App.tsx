@@ -766,7 +766,11 @@ if (directoryEntry.signup_code !== signupCode.trim().toUpperCase()) {
   return
 }
 
-  const { data, error: signUpError } = await supabase.auth.signUp({ email: email.trim().toLowerCase(), password })
+  const { data, error: signUpError } = await supabase.auth.signUp({
+    email: email.trim().toLowerCase(),
+    password,
+    options: { data: { display_name: name.trim(), avatar } },
+  })
   if (signUpError) { setLoading(false); setError(signUpError.message); return }
   if (!data.user) { setLoading(false); setError('Kiểm tra email để xác nhận tài khoản, sau đó đăng nhập lại.'); return }
 
