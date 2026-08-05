@@ -1062,7 +1062,7 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser, se
             🏆 {isManager ? 'Team' : 'Bảng xếp hạng'}
           </h3>
           <div className="space-y-3">
-            {(isManager ? users.filter(u => u.teamId === currentUser.teamId && u.id !== currentUser.id && u.role === 'employee')
+            {(isManager ? users.filter(u => u.teamId === currentUser.teamId)
               : users.filter(u => u.role === 'employee'))
               .sort((a, b) => b.exp - a.exp).slice(0, 5).map((user, i) => (
                 <div key={user.id} className="flex items-center gap-2.5">
