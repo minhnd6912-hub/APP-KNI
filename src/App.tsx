@@ -50,6 +50,8 @@ interface Task {
   submittedAt?: string
   rejectedReason?: string
   startDate?: string
+  important: boolean
+  urgent: boolean
 }
 
 interface Message {
@@ -528,14 +530,14 @@ const MOCK_USERS: User[] = [
 //   { id: 't8', title: 'Viết tài liệu API', description: 'Swagger docs đầy đủ cho tất cả API endpoints', expReward: 70, status: 'open', projectManager: 'u1', supporters: [], createdBy: 'u1', dueDate: '2026-08-01', category: 'development', priority: 'medium', selfCreated: false },
 // ]
 const INITIAL_TASKS: Task[] = [
-  { id: 't1', title: 'Xây dựng API authentication', description: 'Implement JWT authentication với refresh token và blacklist', expReward: 150, status: 'in-progress', assignedTo: ['u3'], projectManager: ['u1'], supporters: ['u4', 'u5'], createdBy: 'u1', dueDate: '2026-07-30', category: 'development', priority: 'high', selfCreated: false },
-  { id: 't2', title: 'Thiết kế UI Dashboard', description: 'Tạo Figma mockup cho trang dashboard chính theo Design System mới', expReward: 80, status: 'open', assignedTo: ['u6'], projectManager: ['u2'], supporters: ['u7'], createdBy: 'u2', dueDate: '2026-07-28', category: 'design', priority: 'medium', selfCreated: false },
-  { id: 't3', title: 'Viết unit tests cho Payment', description: 'Coverage tối thiểu 80% cho toàn bộ module payment', expReward: 100, status: 'completed', assignedTo: ['u4'], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-07-22', category: 'development', priority: 'high', selfCreated: false },
-  { id: 't4', title: 'Tối ưu query database', description: 'Giảm response time của báo cáo xuống dưới 2 giây', expReward: 120, status: 'open', assignedTo: [], projectManager: ['u1'], supporters: ['u3'], createdBy: 'u1', dueDate: '2026-08-05', category: 'development', priority: 'medium', selfCreated: false },
-  { id: 't5', title: 'Học React Query', description: 'Tự học và áp dụng React Query vào dự án hiện tại', expReward: 60, status: 'in-progress', assignedTo: ['u3'], projectManager: [], supporters: [], createdBy: 'u3', dueDate: '2026-07-29', category: 'research', priority: 'low', selfCreated: true },
-  { id: 't6', title: 'Review PR của team', description: 'Review ít nhất 5 pull request trong tuần này', expReward: 40, status: 'open', assignedTo: ['u5'], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-07-26', category: 'development', priority: 'low', selfCreated: false },
-  { id: 't7', title: 'Xây dựng Design System', description: 'Setup Storybook và tạo component library đầy đủ', expReward: 200, status: 'open', assignedTo: ['u7'], projectManager: ['u2'], supporters: ['u6', 'u8'], createdBy: 'u2', dueDate: '2026-08-10', category: 'design', priority: 'high', selfCreated: false },
-  { id: 't8', title: 'Viết tài liệu API', description: 'Swagger docs đầy đủ cho tất cả API endpoints', expReward: 70, status: 'open', assignedTo: [], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-08-01', category: 'development', priority: 'medium', selfCreated: false },
+  { id: 't1', title: 'Xây dựng API authentication', description: 'Implement JWT authentication với refresh token và blacklist', expReward: 150, status: 'in-progress', assignedTo: ['u3'], projectManager: ['u1'], supporters: ['u4', 'u5'], createdBy: 'u1', dueDate: '2026-07-30', category: 'development', priority: 'high', selfCreated: false, important: false, urgent: false },  
+  { id: 't2', title: 'Thiết kế UI Dashboard', description: 'Tạo Figma mockup cho trang dashboard chính theo Design System mới', expReward: 80, status: 'open', assignedTo: ['u6'], projectManager: ['u2'], supporters: ['u7'], createdBy: 'u2', dueDate: '2026-07-28', category: 'design', priority: 'medium', selfCreated: false , important: false, urgent: false},
+  { id: 't3', title: 'Viết unit tests cho Payment', description: 'Coverage tối thiểu 80% cho toàn bộ module payment', expReward: 100, status: 'completed', assignedTo: ['u4'], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-07-22', category: 'development', priority: 'high', selfCreated: false, important: false, urgent: false },
+  { id: 't4', title: 'Tối ưu query database', description: 'Giảm response time của báo cáo xuống dưới 2 giây', expReward: 120, status: 'open', assignedTo: [], projectManager: ['u1'], supporters: ['u3'], createdBy: 'u1', dueDate: '2026-08-05', category: 'development', priority: 'medium', selfCreated: false, important: false, urgent: false },
+  { id: 't5', title: 'Học React Query', description: 'Tự học và áp dụng React Query vào dự án hiện tại', expReward: 60, status: 'in-progress', assignedTo: ['u3'], projectManager: [], supporters: [], createdBy: 'u3', dueDate: '2026-07-29', category: 'research', priority: 'low', selfCreated: true , important: false, urgent: false},
+  { id: 't6', title: 'Review PR của team', description: 'Review ít nhất 5 pull request trong tuần này', expReward: 40, status: 'open', assignedTo: ['u5'], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-07-26', category: 'development', priority: 'low', selfCreated: false , important: false, urgent: false},
+  { id: 't7', title: 'Xây dựng Design System', description: 'Setup Storybook và tạo component library đầy đủ', expReward: 200, status: 'open', assignedTo: ['u7'], projectManager: ['u2'], supporters: ['u6', 'u8'], createdBy: 'u2', dueDate: '2026-08-10', category: 'design', priority: 'high', selfCreated: false, important: false, urgent: false },
+  { id: 't8', title: 'Viết tài liệu API', description: 'Swagger docs đầy đủ cho tất cả API endpoints', expReward: 70, status: 'open', assignedTo: [], projectManager: ['u1'], supporters: [], createdBy: 'u1', dueDate: '2026-08-01', category: 'development', priority: 'medium', selfCreated: false, important: false, urgent: false },
 ]
 
 const INITIAL_MESSAGES: Message[] = [
@@ -607,15 +609,24 @@ const PRIORITY_EXP_LIMITS: Record<TaskPriority, { min: number; max: number; sugg
   medium: { min: 60, max: 150, suggested: 80, hint: '💡 Việc vừa, làm 2–3 ngày → nên cho 60–150 EXP' },
   high: { min: 150, max: 300, suggested: 200, hint: '💡 Việc khó, nhiều ngày/phức tạp → nên cho 150–300 EXP' },
 }
-function suggestExp(priority: TaskPriority, startDate: string, dueDate: string): number {
-  const limits = PRIORITY_EXP_LIMITS[priority]
-  if (!startDate || !dueDate) return limits.suggested
+function getExpRange(priority: TaskPriority, important: boolean, urgent: boolean) {
+  const base = PRIORITY_EXP_LIMITS[priority]
+  const multiplier = (important ? 1.25 : 1.0) * (urgent ? 1.2 : 1.0)
+  return {
+    min: Math.round(base.min * multiplier),
+    max: Math.round(base.max * multiplier),
+    suggested: Math.round(base.suggested * multiplier),
+  }
+}
+function suggestExp(priority: TaskPriority, startDate: string, dueDate: string, important: boolean, urgent: boolean): number {
+  const range = getExpRange(priority, important, urgent)
+  if (!startDate || !dueDate) return range.suggested
 
   const days = Math.round((new Date(dueDate).getTime() - new Date(startDate).getTime()) / 86400000)
   const clampedDays = Math.min(Math.max(days, 1), 7)
   const ratio = (7 - clampedDays) / 6 // 1 ngày → ratio 1 (điểm cao nhất khung); 7+ ngày → ratio 0 (điểm thấp nhất khung)
 
-  return Math.round(limits.min + (limits.max - limits.min) * ratio)
+  return Math.round(range.min + (range.max - range.min) * ratio)
 }
 // % của EXP gốc mà mỗi người "Hỗ trợ" nhận được khi task hoàn thành (Phụ trách/PM luôn nhận đủ 100%)
 const SUPPORTER_EXP_PERCENT = 0.3
@@ -1220,6 +1231,7 @@ function TasksView({ currentUser, tasks, users, setTasks, setCurrentUser }: {
   const [form, setForm] = useState({
     title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '',
     category: 'development', priority: 'medium' as TaskPriority,
+    important: false, urgent: false,
     assignedTo: [] as string[], projectManager: [] as string[], supporters: [] as string[],
   })
 
@@ -1301,9 +1313,9 @@ const handleReject = async (task: Task) => {
 
 const handleCreate = async () => {
   if (!form.title.trim()) return
-  const { min, max } = PRIORITY_EXP_LIMITS[form.priority]
+  const { min, max } = getExpRange(form.priority, form.important, form.urgent)
   if (form.expReward < min || form.expReward > max) {
-    alert(`Điểm EXP phải nằm trong khoảng ${min}–${max} cho mức độ "${PRIORITY_CONFIG[form.priority].label}"`)
+    alert(`Điểm EXP phải nằm trong khoảng ${min}–${max} cho mức độ "${PRIORITY_CONFIG[form.priority].label}" với lựa chọn Quan trọng/Gấp hiện tại`)
     return
   }
   await supabase.from('tasks').insert({
@@ -1314,9 +1326,10 @@ const handleCreate = async () => {
     start_date: form.startDate,
     due_date: form.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
     category: form.category, priority: form.priority, self_created: !isManager,
+    important: form.important, urgent: form.urgent,
   })
   setShowModal(false)
-  setForm({ title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '', category: 'development', priority: 'medium', assignedTo: [], projectManager: [], supporters: [] })
+  setForm({ title: '', description: '', expReward: 80, startDate: todayStr, dueDate: '', category: 'development', priority: 'medium', important: false, urgent: false, assignedTo: [], projectManager: [], supporters: [] })
 }
   const toggleFormArray = (field: 'assignedTo' | 'projectManager' | 'supporters', uid: string) => {
     setForm(f => ({
@@ -1623,7 +1636,7 @@ const handleCreate = async () => {
                   <input type="date" value={form.startDate}
                     onChange={e => {
                       const startDate = e.target.value
-                      setForm(f => ({ ...f, startDate, expReward: suggestExp(f.priority, startDate, f.dueDate) }))
+                      setForm(f => ({ ...f, startDate, expReward: suggestExp(f.priority, startDate, f.dueDate, f.important, f.urgent) }))
                     }}
                     className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a', colorScheme: 'dark' }} />
@@ -1633,7 +1646,7 @@ const handleCreate = async () => {
                   <input type="date" value={form.dueDate} min={form.startDate || undefined}
                     onChange={e => {
                       const dueDate = e.target.value
-                      setForm(f => ({ ...f, dueDate, expReward: suggestExp(f.priority, f.startDate, dueDate) }))
+                      setForm(f => ({ ...f, dueDate, expReward: suggestExp(f.priority, f.startDate, dueDate, f.important, f.urgent) }))
                     }}
                     className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a', colorScheme: 'dark' }} />
@@ -1647,11 +1660,11 @@ const handleCreate = async () => {
   className="w-full px-3 py-2.5 rounded-lg text-amber-400 text-sm outline-none font-bold"
   style={{
     background: '#14143a',
-    border: `1px solid ${form.expReward < PRIORITY_EXP_LIMITS[form.priority].min || form.expReward > PRIORITY_EXP_LIMITS[form.priority].max ? '#f87171' : '#2a2a5a'}`,
+    border: `1px solid ${form.expReward < getExpRange(form.priority, form.important, form.urgent).min || form.expReward > getExpRange(form.priority, form.important, form.urgent).max ? '#f87171' : '#2a2a5a'}`,
   }} />
 <p className="text-[10px] mt-1.5 leading-relaxed"
-  style={{ color: form.expReward < PRIORITY_EXP_LIMITS[form.priority].min || form.expReward > PRIORITY_EXP_LIMITS[form.priority].max ? '#f87171' : '#6b7280' }}>
-  {PRIORITY_EXP_LIMITS[form.priority].hint}
+  style={{ color: form.expReward < getExpRange(form.priority, form.important, form.urgent).min || form.expReward > getExpRange(form.priority, form.important, form.urgent).max ? '#f87171' : '#6b7280' }}>
+  💡 Gợi ý theo độ khó + Quan trọng/Gấp: {getExpRange(form.priority, form.important, form.urgent).min}–{getExpRange(form.priority, form.important, form.urgent).max} EXP
 </p>
 </div>
 
@@ -1669,7 +1682,7 @@ const handleCreate = async () => {
                   <select value={form.priority}
                     onChange={e => {
                       const newPriority = e.target.value as TaskPriority
-                      setForm(f => ({ ...f, priority: newPriority, expReward: suggestExp(newPriority, f.startDate, f.dueDate) }))
+                      setForm(f => ({ ...f, priority: newPriority, expReward: suggestExp(newPriority, f.startDate, f.dueDate, f.important, f.urgent) }))
                     }}
                     className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
                     style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
@@ -1677,6 +1690,39 @@ const handleCreate = async () => {
                     <option value="medium">Trung bình</option>
                     <option value="high">Cao</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mức độ quan trọng</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setForm(f => ({ ...f, important: false, expReward: suggestExp(f.priority, f.startDate, f.dueDate, false, f.urgent) }))}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
+                      style={{ background: !form.important ? '#7c3aed' : '#14143a', color: !form.important ? '#fff' : '#6b7280' }}>
+                      Không quan trọng
+                    </button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, important: true, expReward: suggestExp(f.priority, f.startDate, f.dueDate, true, f.urgent) }))}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
+                      style={{ background: form.important ? '#7c3aed' : '#14143a', color: form.important ? '#fff' : '#6b7280' }}>
+                      Quan trọng
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mức độ gấp</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setForm(f => ({ ...f, urgent: false, expReward: suggestExp(f.priority, f.startDate, f.dueDate, f.important, false) }))}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
+                      style={{ background: !form.urgent ? '#7c3aed' : '#14143a', color: !form.urgent ? '#fff' : '#6b7280' }}>
+                      Không gấp
+                    </button>
+                    <button type="button" onClick={() => setForm(f => ({ ...f, urgent: true, expReward: suggestExp(f.priority, f.startDate, f.dueDate, f.important, true) }))}
+                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
+                      style={{ background: form.urgent ? '#7c3aed' : '#14143a', color: form.urgent ? '#fff' : '#6b7280' }}>
+                      Gấp
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -2386,6 +2432,8 @@ export default function App() {
     status: t.status, assignedTo: t.assigned_to ?? [], projectManager: t.project_manager ?? [],
     supporters: t.supporters ?? [], createdBy: t.created_by, dueDate: t.due_date,
     category: t.category, priority: t.priority, selfCreated: t.self_created,
+    important: t.important ?? false,
+    urgent: t.urgent ?? false,
     submissionFileUrl: t.submission_file_url ?? undefined,
     submissionNote: t.submission_note ?? undefined,
     submittedAt: t.submitted_at ?? undefined,
