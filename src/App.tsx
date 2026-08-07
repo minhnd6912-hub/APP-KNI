@@ -1158,14 +1158,20 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       })
+      // uploadJson = await uploadRes.json()
+      // if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
       uploadJson = await uploadRes.json()
-      if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
+      if (!uploadRes.ok) {
+        setUploading(false)
+        setError(`Lỗi tải file (status ${uploadRes.status}): ${uploadJson.error || uploadJson.message || JSON.stringify(uploadJson)}`)
+        return
+      }
     } catch (err) {
       setUploading(false)
       setError('Không kết nối được tới server upload: ' + String(err))
       return
     } 
-    
+
     const { error: updateError } = await supabase.from('tasks').update({
       status: 'submitted',
       submission_file_url: uploadJson.key,
