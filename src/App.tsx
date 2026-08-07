@@ -1137,40 +1137,18 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
     setError('')
     setUploading(true)
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    const token = sessionData.session?.access_token
-
     const formData = new FormData()
     formData.append('file', file)
     formData.append('taskId', task.id)
 
-    // const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
-    //   method: 'POST',
-    //   headers: { Authorization: `Bearer ${token}` },
-    //   body: formData,
-    // })
-    // const uploadJson = await uploadRes.json()
-    // if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
-    let uploadJson
-    try {
-      const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      })
-      // uploadJson = await uploadRes.json()
-      // if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
-      uploadJson = await uploadRes.json()
-      if (!uploadRes.ok) {
-        setUploading(false)
-        setError(`Lỗi tải file (status ${uploadRes.status}): ${uploadJson.error || uploadJson.message || JSON.stringify(uploadJson)}`)
-        return
-      }
-    } catch (err) {
+    const { data: uploadJson, error: uploadError } = await supabase.functions.invoke('upload-to-b2', {
+      body: formData,
+    })
+    if (uploadError) {
       setUploading(false)
-      setError('Không kết nối được tới server upload: ' + String(err))
+      setError('Lỗi tải file: ' + uploadError.message)
       return
-    } 
+    }
 
     const { error: updateError } = await supabase.from('tasks').update({
       status: 'submitted',
@@ -1184,6 +1162,45 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
     if (updateError) { setError(updateError.message); return }
     onClose()
   }
+  // const handleSubmit = async () => {
+  //   if (!file) { setError('Vui lòng chọn ảnh hoặc file kết quả trước khi nộp.'); return }
+  //   setError('')
+  //   setUploading(true)
+
+  //   const { data: sessionData } = await supabase.auth.getSession()
+  //   const token = sessionData.session?.access_token
+
+  //   const formData = new FormData()
+  //   formData.append('file', file)
+  //   formData.append('taskId', task.id)
+
+  //   // const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
+  //   //   method: 'POST',
+  //   //   headers: { Authorization: `Bearer ${token}` },
+  //   //   body: formData,
+  //   // })
+  //   // const uploadJson = await uploadRes.json()
+  //   // if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
+  //   let uploadJson
+  //   try {
+  //     const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
+  //       method: 'POST',
+  //       headers: { Authorization: `Bearer ${token}` },
+  //       body: formData,
+  //     })
+  //     // uploadJson = await uploadRes.json()
+  //     // if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
+  //     uploadJson = await uploadRes.json()
+  //     if (!uploadRes.ok) {
+  //       setUploading(false)
+  //       setError(`Lỗi tải file (status ${uploadRes.status}): ${uploadJson.error || uploadJson.message || JSON.stringify(uploadJson)}`)
+  //       return
+  //     }
+  //   } catch (err) {
+  //     setUploading(false)
+  //     setError('Không kết nối được tới server upload: ' + String(err))
+  //     return
+  //   } 
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 px-4" style={{ background: '#000000a0' }}>
@@ -1374,17 +1391,24 @@ const handleReject = async (task: Task) => {
   }).eq('id', task.id)
 }
 
+// const viewSubmissionFile = async (key: string) => {
+//   const { data: sessionData } = await supabase.auth.getSession()
+//   const token = sessionData.session?.access_token
+//   const res = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/get-file-url', {
+//     method: 'POST',
+//     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ key }),
+//   })
+//   const json = await res.json()
+//   if (res.ok && json.url) window.open(json.url, '_blank')
+//   else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
+// }
 const viewSubmissionFile = async (key: string) => {
-  const { data: sessionData } = await supabase.auth.getSession()
-  const token = sessionData.session?.access_token
-  const res = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/get-file-url', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key }),
+  const { data, error } = await supabase.functions.invoke('get-file-url', {
+    body: { key },
   })
-  const json = await res.json()
-  if (res.ok && json.url) window.open(json.url, '_blank')
-  else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
+  if (error) { alert('Không mở được file: ' + error.message); return }
+  window.open(data.url, '_blank')
 }
 
 const handleCreate = async () => {
