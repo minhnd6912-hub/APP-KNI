@@ -1137,16 +1137,32 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
     setError('')
     setUploading(true)
 
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData.session?.access_token
+
     const formData = new FormData()
     formData.append('file', file)
     formData.append('taskId', task.id)
 
-    const { data: uploadJson, error: uploadError } = await supabase.functions.invoke('upload-to-b2', {
-      body: formData,
-    })
-    if (uploadError) {
+    let uploadJson
+    try {
+      const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: 'sb_publishable_hd9EH0RxaXIdGXpfR-bcxg_2ZwlbLko',
+        },
+        body: formData,
+      })
+      uploadJson = await uploadRes.json()
+      if (!uploadRes.ok) {
+        setUploading(false)
+        setError(`Lỗi tải file (status ${uploadRes.status}): ${uploadJson.error || uploadJson.message || JSON.stringify(uploadJson)}`)
+        return
+      }
+    } catch (err) {
       setUploading(false)
-      setError('Lỗi tải file: ' + uploadError.message)
+      setError('Không kết nối được tới server upload: ' + String(err))
       return
     }
 
@@ -1404,11 +1420,20 @@ const handleReject = async (task: Task) => {
 //   else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
 // }
 const viewSubmissionFile = async (key: string) => {
-  const { data, error } = await supabase.functions.invoke('get-file-url', {
-    body: { key },
+  const { data: sessionData } = await supabase.auth.getSession()
+  const token = sessionData.session?.access_token
+  const res = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/get-file-url', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      apikey: 'sb_publishable_hd9EH0RxaXIdGXpfR-bcxg_2ZwlbLko',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ key }),
   })
-  if (error) { alert('Không mở được file: ' + error.message); return }
-  window.open(data.url, '_blank')
+  const json = await res.json()
+  if (res.ok && json.url) window.open(json.url, '_blank')
+  else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
 }
 
 const handleCreate = async () => {
