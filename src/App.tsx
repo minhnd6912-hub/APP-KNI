@@ -1137,38 +1137,17 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
     setError('')
     setUploading(true)
 
-    const { data: sessionData } = await supabase.auth.getSession()
-    const token = sessionData.session?.access_token
+    const ext = file.name.split('.').pop()
+    const path = `${task.id}/${Date.now()}.${ext}`
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('taskId', task.id)
+    const { error: uploadError } = await supabase.storage.from('task-submissions').upload(path, file)
+    if (uploadError) { setUploading(false); setError('Lỗi tải file: ' + uploadError.message); return }
 
-    let uploadJson
-    try {
-      const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          apikey: 'sb_publishable_hd9EH0RxaXIdGXpfR-bcxg_2ZwlbLko',
-        },
-        body: formData,
-      })
-      uploadJson = await uploadRes.json()
-      if (!uploadRes.ok) {
-        setUploading(false)
-        setError(`Lỗi tải file (status ${uploadRes.status}): ${uploadJson.error || uploadJson.message || JSON.stringify(uploadJson)}`)
-        return
-      }
-    } catch (err) {
-      setUploading(false)
-      setError('Không kết nối được tới server upload: ' + String(err))
-      return
-    }
+    const { data: urlData } = supabase.storage.from('task-submissions').getPublicUrl(path)
 
     const { error: updateError } = await supabase.from('tasks').update({
       status: 'submitted',
-      submission_file_url: uploadJson.key,
+      submission_file_url: urlData.publicUrl,
       submission_note: note.trim() || null,
       submitted_at: new Date().toISOString(),
       rejected_reason: null,

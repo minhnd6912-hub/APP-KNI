@@ -1,46 +1,58 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts"
+import { createClient } from "npm:@supabase/supabase-js@2"
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import "@supabase/functions-js/edge-runtime.d.ts";
-import { withSupabase } from "@supabase/server";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+}
 
-console.log("Hello from Functions!");
+async function b2Authorize() {
+  const credentials = btoa(`${Deno.env.get("B2_KEY_ID")}:${Deno.env.get("B2_APP_KEY")}`)
+  const res = await fetch("https://api.backblazeb2.com/b2api/v3/b2_authorize_account", {
+    headers: { Authorization: `Basic ${credentials}` },
+  })
+  if (!res.ok) throw new Error("Lỗi xác thực B2: " + await res.text())
+  return res.json()
+}
 
-// This endpoint uses 'publishable' | 'secret' access, apiKey is required.
-// Use publishable for Client-facing, key-validated endpoints
-// Use secret for Server-to-server, internal calls
-export default {
-  fetch: withSupabase({ auth: ["publishable", "secret"] }, async (req, ctx) => {
-    // Called by another service with a secret key
-    // ctx.supabaseAdmin bypasses RLS — use for privileged operations
-    /*
-    if (ctx.authMode === "secret") {
-      const { user_id } = await req.json();
-      const { data } = await ctx.supabaseAdmin.auth.admin.getUserById(user_id);
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders })
 
-      return Response.json({
-        email: data?.user?.email,
-      });
+  try {
+    const authHeader = req.headers.get("Authorization")
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader ?? "" } } }
+    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Chưa đăng nhập" }), { status: 401, headers: corsHeaders })
     }
-    */
 
-    const { name } = await req.json();
+    const { key } = await req.json()
+    if (!key) {
+      return new Response(JSON.stringify({ error: "Thiếu key" }), { status: 400, headers: corsHeaders })
+    }
 
-    return Response.json({
-      message: `Hello ${name}!`,
-    });
-  }),
-};
+    const authData = await b2Authorize()
+    const bucketId = Deno.env.get("B2_BUCKET_ID")!
+    const bucketName = Deno.env.get("B2_BUCKET")!
 
-/* To invoke locally:
+    const downloadAuthRes = await fetch(`${authData.apiInfo.storageApi.apiUrl}/b2api/v3/b2_get_download_authorization`, {
+      method: "POST",
+      headers: { Authorization: authData.authorizationToken, "Content-Type": "application/json" },
+      body: JSON.stringify({ bucketId, fileNamePrefix: key, validDurationInSeconds: 900 }),
+    })
+    if (!downloadAuthRes.ok) throw new Error("Lỗi lấy download auth: " + await downloadAuthRes.text())
+    const downloadAuthData = await downloadAuthRes.json()
 
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
+    const url = `${authData.apiInfo.storageApi.downloadUrl}/file/${bucketName}/${encodeURIComponent(key)}?Authorization=${downloadAuthData.authorizationToken}`
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/get-file-url' \
-    --header 'apiKey: sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' \
-    --data '{"name":"Functions"}'
-
-*/
+    return new Response(JSON.stringify({ url }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500, headers: corsHeaders })
+  }
+})
