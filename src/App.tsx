@@ -1044,6 +1044,8 @@ function DashboardView({ currentUser, tasks, users, setTasks, setCurrentUser, se
                   <div className="text-white text-sm font-medium truncate">
                     {task.title}
                     {task.selfCreated && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#1a2a1a', color: '#10b981' }}>Tự tạo</span>}
+                    {task.urgent && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#3a0a0a', color: '#f87171' }}>⏰ GẤP</span>}
+                    {task.important && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#3a1a0a', color: '#fbbf24' }}>🔥 Quan trọng</span>}
                   </div>
                   <div className="text-xs mt-0.5">
                     <span style={{ color: STATUS_CONFIG[task.status].color }}>{STATUS_CONFIG[task.status].label}</span>
@@ -1384,6 +1386,8 @@ const handleCreate = async () => {
                     <span className="text-[10px] px-1.5 py-0.5 rounded font-medium uppercase tracking-wider"
                       style={{ background: `${catColor}20`, color: catColor }}>{task.category}</span>
                     {task.selfCreated && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: '#1a2a1a', color: '#10b981' }}>Tự tạo</span>}
+                    {task.urgent && <span className="text-[10px] px-1.5 py-0.5 rounded font-bold animate-pulse" style={{ background: '#3a0a0a', color: '#f87171' }}>⏰ GẤP</span>}
+                    {task.important && <span className="text-[10px] px-1.5 py-0.5 rounded font-bold" style={{ background: '#3a1a0a', color: '#fbbf24' }}>🔥 Quan trọng</span>}
                   </div>
                   <h3 className="text-white font-semibold text-sm">{task.title}</h3>
                 </div>
