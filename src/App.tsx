@@ -1106,22 +1106,55 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
 
+  // const handleSubmit = async () => {
+  //   if (!file) { setError('Vui lòng chọn ảnh hoặc file kết quả trước khi nộp.'); return }
+  //   setError('')
+  //   setUploading(true)
+
+  //   const ext = file.name.split('.').pop()
+  //   const path = `${task.id}/${Date.now()}.${ext}`
+
+  //   const { error: uploadError } = await supabase.storage.from('task-submissions').upload(path, file)
+  //   if (uploadError) { setUploading(false); setError('Lỗi tải file: ' + uploadError.message); return }
+
+  //   const { data: urlData } = supabase.storage.from('task-submissions').getPublicUrl(path)
+
+  //   const { error: updateError } = await supabase.from('tasks').update({
+  //     status: 'submitted',
+  //     submission_file_url: urlData.publicUrl,
+  //     submission_note: note.trim() || null,
+  //     submitted_at: new Date().toISOString(),
+  //     rejected_reason: null,
+  //   }).eq('id', task.id)
+
+  //   setUploading(false)
+  //   if (updateError) { setError(updateError.message); return }
+  //   onClose()
+  // }
+  
   const handleSubmit = async () => {
     if (!file) { setError('Vui lòng chọn ảnh hoặc file kết quả trước khi nộp.'); return }
     setError('')
     setUploading(true)
 
-    const ext = file.name.split('.').pop()
-    const path = `${task.id}/${Date.now()}.${ext}`
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData.session?.access_token
 
-    const { error: uploadError } = await supabase.storage.from('task-submissions').upload(path, file)
-    if (uploadError) { setUploading(false); setError('Lỗi tải file: ' + uploadError.message); return }
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('taskId', task.id)
 
-    const { data: urlData } = supabase.storage.from('task-submissions').getPublicUrl(path)
+    const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    })
+    const uploadJson = await uploadRes.json()
+    if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
 
     const { error: updateError } = await supabase.from('tasks').update({
       status: 'submitted',
-      submission_file_url: urlData.publicUrl,
+      submission_file_url: uploadJson.key,
       submission_note: note.trim() || null,
       submitted_at: new Date().toISOString(),
       rejected_reason: null,
@@ -1306,6 +1339,14 @@ const handleApprove = async (task: Task) => {
   }
 }
 
+// const handleReject = async (task: Task) => {
+//   const reason = window.prompt('Lý do từ chối (nhân viên sẽ thấy để sửa lại):') ?? ''
+//   await supabase.from('tasks').update({
+//     status: 'in-progress', submission_file_url: null, submission_note: null, rejected_reason: reason,
+//   }).eq('id', task.id)
+// }
+
+// const handleCreate = async () => {
 const handleReject = async (task: Task) => {
   const reason = window.prompt('Lý do từ chối (nhân viên sẽ thấy để sửa lại):') ?? ''
   await supabase.from('tasks').update({
@@ -1313,7 +1354,22 @@ const handleReject = async (task: Task) => {
   }).eq('id', task.id)
 }
 
+const viewSubmissionFile = async (key: string) => {
+  const { data: sessionData } = await supabase.auth.getSession()
+  const token = sessionData.session?.access_token
+  const res = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/get-file-url', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key }),
+  })
+  const json = await res.json()
+  if (res.ok && json.url) window.open(json.url, '_blank')
+  else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
+}
+
 const handleCreate = async () => {
+
+
   if (!form.title.trim()) return
   const { min, max } = getExpRange(form.priority, form.important, form.urgent)
   if (form.expReward < min || form.expReward > max) {
@@ -1518,13 +1574,21 @@ const handleCreate = async () => {
               {task.status === 'completed' ? (
                 <span className="text-green-400 text-xs">✓ Hoàn thành</span>
 
+              // ) : task.status === 'submitted' && currentUser.role === 'manager' ? (
+              //   <div className="flex flex-col gap-1.5 items-end">
+              //     {task.submissionFileUrl && (
+              //       <a href={task.submissionFileUrl} target="_blank" rel="noopener noreferrer"
+              //         className="text-xs underline" style={{ color: '#60a5fa' }}>
+              //         📎 Xem file đã nộp
+              //       </a>
+              //     )}
               ) : task.status === 'submitted' && currentUser.role === 'manager' ? (
                 <div className="flex flex-col gap-1.5 items-end">
                   {task.submissionFileUrl && (
-                    <a href={task.submissionFileUrl} target="_blank" rel="noopener noreferrer"
-                      className="text-xs underline" style={{ color: '#60a5fa' }}>
+                    <button onClick={() => viewSubmissionFile(task.submissionFileUrl!)}
+                      className="text-xs underline" style={{ color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                       📎 Xem file đã nộp
-                    </a>
+                    </button>
                   )}
                   {task.submissionNote && <p className="text-gray-500 text-xs max-w-[200px] text-right">{task.submissionNote}</p>}
                   <div className="flex gap-1.5">
