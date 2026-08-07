@@ -1398,22 +1398,7 @@ const handleReject = async (task: Task) => {
 //   if (res.ok && json.url) window.open(json.url, '_blank')
 //   else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
 // }
-const viewSubmissionFile = async (key: string) => {
-  const { data: sessionData } = await supabase.auth.getSession()
-  const token = sessionData.session?.access_token
-  const res = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/get-file-url', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      apikey: 'sb_publishable_hd9EH0RxaXIdGXpfR-bcxg_2ZwlbLko',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ key }),
-  })
-  const json = await res.json()
-  if (res.ok && json.url) window.open(json.url, '_blank')
-  else alert('Không mở được file: ' + (json.error || 'lỗi không xác định'))
-}
+
 
 const handleCreate = async () => {
 
@@ -1633,10 +1618,10 @@ const handleCreate = async () => {
               ) : task.status === 'submitted' && currentUser.role === 'manager' ? (
                 <div className="flex flex-col gap-1.5 items-end">
                   {task.submissionFileUrl && (
-                    <button onClick={() => viewSubmissionFile(task.submissionFileUrl!)}
-                      className="text-xs underline" style={{ color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    <a href={task.submissionFileUrl} target="_blank" rel="noopener noreferrer"
+                      className="text-xs underline" style={{ color: '#60a5fa' }}>
                       📎 Xem file đã nộp
-                    </button>
+                    </a>
                   )}
                   {task.submissionNote && <p className="text-gray-500 text-xs max-w-[200px] text-right">{task.submissionNote}</p>}
                   <div className="flex gap-1.5">
