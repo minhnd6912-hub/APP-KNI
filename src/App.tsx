@@ -1696,33 +1696,29 @@ const handleCreate = async () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mức độ quan trọng</label>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => setForm(f => ({ ...f, important: false, expReward: suggestExp(f.priority, f.startDate, f.dueDate, false, f.urgent) }))}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
-                      style={{ background: !form.important ? '#7c3aed' : '#14143a', color: !form.important ? '#fff' : '#6b7280' }}>
-                      Không quan trọng
-                    </button>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, important: true, expReward: suggestExp(f.priority, f.startDate, f.dueDate, true, f.urgent) }))}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
-                      style={{ background: form.important ? '#7c3aed' : '#14143a', color: form.important ? '#fff' : '#6b7280' }}>
-                      Quan trọng
-                    </button>
-                  </div>
+                  <select value={form.important ? '1' : '0'}
+                    onChange={e => {
+                      const important = e.target.value === '1'
+                      setForm(f => ({ ...f, important, expReward: suggestExp(f.priority, f.startDate, f.dueDate, important, f.urgent) }))
+                    }}
+                    className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
+                    style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
+                    <option value="0">Không quan trọng</option>
+                    <option value="1">Quan trọng</option>
+                  </select>
                 </div>
                 <div>
                   <label className="text-gray-500 text-xs uppercase tracking-wider mb-1.5 block">Mức độ gấp</label>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => setForm(f => ({ ...f, urgent: false, expReward: suggestExp(f.priority, f.startDate, f.dueDate, f.important, false) }))}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
-                      style={{ background: !form.urgent ? '#7c3aed' : '#14143a', color: !form.urgent ? '#fff' : '#6b7280' }}>
-                      Không gấp
-                    </button>
-                    <button type="button" onClick={() => setForm(f => ({ ...f, urgent: true, expReward: suggestExp(f.priority, f.startDate, f.dueDate, f.important, true) }))}
-                      className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
-                      style={{ background: form.urgent ? '#7c3aed' : '#14143a', color: form.urgent ? '#fff' : '#6b7280' }}>
-                      Gấp
-                    </button>
-                  </div>
+                  <select value={form.urgent ? '1' : '0'}
+                    onChange={e => {
+                      const urgent = e.target.value === '1'
+                      setForm(f => ({ ...f, urgent, expReward: suggestExp(f.priority, f.startDate, f.dueDate, f.important, urgent) }))
+                    }}
+                    className="w-full px-3 py-2.5 rounded-lg text-white text-sm outline-none"
+                    style={{ background: '#14143a', border: '1px solid #2a2a5a' }}>
+                    <option value="0">Không gấp</option>
+                    <option value="1">Gấp</option>
+                  </select>
                 </div>
               </div>
 
