@@ -1144,14 +1144,28 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
     formData.append('file', file)
     formData.append('taskId', task.id)
 
-    const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    })
-    const uploadJson = await uploadRes.json()
-    if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
-
+    // const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
+    //   method: 'POST',
+    //   headers: { Authorization: `Bearer ${token}` },
+    //   body: formData,
+    // })
+    // const uploadJson = await uploadRes.json()
+    // if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
+    let uploadJson
+    try {
+      const uploadRes = await fetch('https://legrsdmjstoxcoxvumgg.supabase.co/functions/v1/upload-to-b2', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      uploadJson = await uploadRes.json()
+      if (!uploadRes.ok) { setUploading(false); setError('Lỗi tải file: ' + (uploadJson.error || 'lỗi không xác định')); return }
+    } catch (err) {
+      setUploading(false)
+      setError('Không kết nối được tới server upload: ' + String(err))
+      return
+    } 
+    
     const { error: updateError } = await supabase.from('tasks').update({
       status: 'submitted',
       submission_file_url: uploadJson.key,
