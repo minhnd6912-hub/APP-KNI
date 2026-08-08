@@ -1140,7 +1140,10 @@ function SubmitTaskModal({ task, onClose }: { task: Task; onClose: () => void })
     const ext = file.name.split('.').pop()
     const path = `${task.id}/${Date.now()}.${ext}`
 
-    const { error: uploadError } = await supabase.storage.from('task-submissions').upload(path, file)
+    const arrayBuffer = await file.arrayBuffer()
+    const { error: uploadError } = await supabase.storage.from('task-submissions').upload(path, arrayBuffer, {
+      contentType: file.type || 'application/octet-stream',
+    })
     if (uploadError) { setUploading(false); setError('Lỗi tải file: ' + uploadError.message); return }
 
     const { data: urlData } = supabase.storage.from('task-submissions').getPublicUrl(path)
